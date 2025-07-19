@@ -28,7 +28,6 @@ $orders_today = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
 $stmt = $menu->read();
 $total_menu = $stmt->rowCount();
 
-
 // Recent orders (ambil 5 terbaru)
 $recent_stmt = $db->prepare("SELECT * FROM pesanan ORDER BY tgl_pesanan DESC LIMIT 5");
 $recent_stmt->execute();
@@ -76,9 +75,7 @@ $recent_orders = $recent_stmt->fetchAll(PDO::FETCH_ASSOC);
                     <li class="nav-item">
                         <a class="nav-link" href="pesan_minuman.php">Kelola Pesanan</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="laporan_harian.php">Laporan Harian</a>
-                    </li>
+                
                 </ul>
                 <ul class="navbar-nav">
                     <li class="nav-item dropdown">
@@ -129,10 +126,7 @@ $recent_orders = $recent_stmt->fetchAll(PDO::FETCH_ASSOC);
                     </div>
                 </div>
             </div>
-            <!--  -->
         </div>
-
-
 
         <!-- Recent Orders -->
         <div class="row mt-4">
@@ -166,11 +160,8 @@ $recent_orders = $recent_stmt->fetchAll(PDO::FETCH_ASSOC);
                                             <td>Rp <?php echo number_format($row['total_harga'], 0, ',', '.'); ?></td>
                                             <td><?php echo date('d/m/Y H:i', strtotime($row['tgl_pesanan'])); ?></td>
                                             <td>
-                                                
-                                            </td>
-                                            <td>
                                                 <a href="detail_pesanan.php?kode_pesanan=<?= urlencode($row['kode_pesanan']); ?>" class="btn btn-sm btn-primary">
-                                                <i class="fas fa-eye"></i> Detail
+                                                    <i class="fas fa-eye"></i> Detail
                                                 </a>
                                             </td>
                                         </tr>
@@ -188,9 +179,7 @@ $recent_orders = $recent_stmt->fetchAll(PDO::FETCH_ASSOC);
                 </div>
             </div>
         </div>
-
-        <!-- Staff Info -->
-        
+    </div>
 
     <!-- Footer -->
     <footer class="mt-5 py-4 bg-light">

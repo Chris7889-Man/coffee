@@ -96,6 +96,8 @@ $stmt->execute();
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Kelola Admin - Coffee Shop Admin</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+    <!-- FontAwesome untuk ikon -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
 
     <style>
@@ -122,7 +124,6 @@ $stmt->execute();
             transition: background 0.3s ease;
         }
 
-
         .btn-gradient-primary:hover {
             background: linear-gradient(135deg, #d6336c, #6f42c1);
             color: #fff;
@@ -133,9 +134,14 @@ $stmt->execute();
             box-shadow: 0 0 0 0.2rem rgba(214, 51, 108, 0.25);
         }
 
+        /* Modal Password Verifikasi */
         .modal-header {
             background: #6f42c1;
             color: #fff;
+        }
+
+        .footer-link {
+            font-size: 0.9rem;
         }
     </style>
 </head>
@@ -171,7 +177,7 @@ $stmt->execute();
                         </form>
                     <?php else: ?>
                         <a href="dashboard.php" class="btn btn-outline-warning btn-sm" title="Kembali ke Dashboard">
-                            <i class="fas fa-home"></i> kembali
+                            <i class="fas fa-home"></i> Dashboard
                         </a>
                     <?php endif; ?>
                 </div>
@@ -215,7 +221,7 @@ $stmt->execute();
             </div>
         </div>
 
-        <!-- Form Tambah Admin -->
+        <!-- Form Tambah Admin (hanya tampil jika sudah verifikasi) -->
         <?php if ($show_add_admin_form): ?>
             <div class="card shadow-sm border-0">
                 <div class="card-header">
@@ -227,20 +233,20 @@ $stmt->execute();
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label for="username" class="form-label">Username *</label>
-                                <input type="text" name="username" id="username" class="form-control" required
-                                       value="<?= htmlspecialchars($_POST['username'] ?? '') ?>" autocomplete="username" />
+                                <input type="text" name="username" id="username" class="form-control" required 
+                                    value="<?= htmlspecialchars($_POST['username'] ?? '') ?>" autocomplete="username" />
                             </div>
                             <div class="col-md-6">
                                 <label for="nama_admin" class="form-label">Nama Admin *</label>
                                 <input type="text" name="nama_admin" id="nama_admin" class="form-control" required
-                                       value="<?= htmlspecialchars($_POST['nama_admin'] ?? '') ?>" autocomplete="name" />
+                                    value="<?= htmlspecialchars($_POST['nama_admin'] ?? '') ?>" autocomplete="name" />
                             </div>
                             <div class="col-md-6">
                                 <label for="email" class="form-label">Email *</label>
                                 <input type="email" name="email" id="email" class="form-control" required
-                                       value="<?= htmlspecialchars($_POST['email'] ?? '') ?>" autocomplete="email" />
+                                    value="<?= htmlspecialchars($_POST['email'] ?? '') ?>" autocomplete="email" />
                             </div>
-                            <div class="col-md-6"></div>
+                            <div class="col-md-6"></div> <!-- spacer -->
                             <div class="col-md-6">
                                 <label for="password" class="form-label">Password *</label>
                                 <input type="password" name="password" id="password" class="form-control" required minlength="6" autocomplete="new-password" />
@@ -252,7 +258,7 @@ $stmt->execute();
                             <div class="col-12">
                                 <div class="form-check">
                                     <input type="checkbox" name="is_super_admin" id="is_super_admin" class="form-check-input"
-                                        <?= isset($_POST['is_super_admin']) ? 'checked' : '' ?> />
+                                    <?= isset($_POST['is_super_admin']) ? 'checked' : '' ?> />
                                     <label for="is_super_admin" class="form-check-label fw-semibold">Super Admin</label>
                                 </div>
                             </div>
@@ -265,19 +271,18 @@ $stmt->execute();
                     </form>
                 </div>
             </div>
+        <?php else: ?>
+            <!-- Modal Trigger Button tidak diperlukan karena modal akan muncul otomatis -->
         <?php endif; ?>
     </div>
 
-    <!-- Modal Verifikasi Password -->
+    <!-- Modal Password Verifikasi (Bootstrap) -->
     <?php if (!$show_add_admin_form): ?>
     <div class="modal fade show" id="passwordModal" tabindex="-1" aria-labelledby="passwordModalLabel" aria-modal="true" role="dialog" style="display: block; background: rgba(0,0,0,0.6);">
         <div class="modal-dialog modal-dialog-centered">
             <form method="POST" class="modal-content" novalidate autocomplete="off">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="passwordModalLabel">
-                        <i class="fas fa-lock"></i> Verifikasi Password Admin
-                    </h5>
-                    <button type="button" class="btn-close" aria-label="Close" onclick="window.location='dashboard.php'"></button>
+                    <h5 class="modal-title" id="passwordModalLabel"><i class="fas fa-lock"></i> Verifikasi Password Admin</h5>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
@@ -290,15 +295,15 @@ $stmt->execute();
                         </div>
                     <?php endif; ?>
                 </div>
-                <div class="modal-footer flex-column gap-2">
+                <div class="modal-footer">
                     <button type="submit" class="btn btn-gradient-primary w-100">Verifikasi</button>
-                    <a href="dashboard.php" class="btn btn-gradient-primary w-100">Dashboard</a>
                 </div>
             </form>
         </div>
     </div>
     <?php endif; ?>
 
+    <!-- Bootstrap Bundle JS (includes Popper) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 

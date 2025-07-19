@@ -6,18 +6,26 @@ class Database {
     private $password = "";
     private $conn;
 
+    // Get the database connection
     public function getConnection() {
         $this->conn = null;
-        
+
         try {
-            $this->conn = new PDO("mysql:host=" . $this->host . ";dbname=" . $this->db_name, $this->username, $this->password);
-            $this->conn->exec("set names utf8");
-            $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            $this->conn = new PDO(
+                "mysql:host={$this->host};dbname={$this->db_name};charset=utf8mb4",
+                $this->username,
+                $this->password,
+                [
+                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                    PDO::ATTR_PERSISTENT => false,
+                ]
+            );
         } catch(PDOException $exception) {
-            echo "Connection error: " . $exception->getMessage();
+            echo "Koneksi database gagal: " . $exception->getMessage();
+            exit;
         }
-        
+
         return $this->conn;
     }
 }
-?>

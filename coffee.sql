@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Jul 16, 2025 at 03:06 AM
+-- Generation Time: Jul 18, 2025 at 10:03 PM
 -- Server version: 8.0.30
 -- PHP Version: 8.1.10
 
@@ -55,17 +55,21 @@ CREATE TABLE `menu` (
   `kategori` enum('Coffe','Non Coffe') CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `harga` int NOT NULL,
   `status` enum('available','unavailable','discontinued') CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT 'available',
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `stok` int NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data for table `menu`
 --
 
-INSERT INTO `menu` (`kode_menu`, `nama_menu`, `kategori`, `harga`, `status`, `created_at`) VALUES
-('KM001', 'vanila', 'Non Coffe', 12000, 'available', '2025-07-14 08:17:49'),
-('KM002', 'gula aren', 'Non Coffe', 15000, 'available', '2025-07-14 08:19:51'),
-('KM003', 'coffe lathe', 'Coffe', 10000, 'available', '2025-07-14 08:20:29');
+INSERT INTO `menu` (`kode_menu`, `nama_menu`, `kategori`, `harga`, `status`, `created_at`, `stok`) VALUES
+('KM001', 'vanila', 'Non Coffe', 12000, 'available', '2025-07-14 08:17:49', 15),
+('KM002', 'gula aren', 'Non Coffe', 15000, 'available', '2025-07-14 08:19:51', 5),
+('KM003', 'coffe lathe', 'Coffe', 10000, 'available', '2025-07-14 08:20:29', 5),
+('KM004', 'cokolate ', 'Non Coffe', 12000, 'available', '2025-07-17 20:28:02', 5),
+('KM005', 'grean tea', 'Non Coffe', 13000, 'available', '2025-07-17 20:28:44', 10),
+('KM006', 'Toramoka', 'Coffe', 12000, 'available', '2025-07-17 21:31:24', 9);
 
 -- --------------------------------------------------------
 
@@ -79,15 +83,17 @@ CREATE TABLE `pesanan` (
   `kode_menu` varchar(255) NOT NULL,
   `total_harga` decimal(10,2) NOT NULL,
   `tgl_pesanan` datetime NOT NULL,
-  `jumlah` int NOT NULL
+  `jumlah` int NOT NULL,
+  `status_pesanan` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data for table `pesanan`
 --
 
-INSERT INTO `pesanan` (`kode_pesanan`, `nama_pelanggan`, `kode_menu`, `total_harga`, `tgl_pesanan`, `jumlah`) VALUES
-('NPS0001', 'cristal', 'KM003', '60000.00', '2025-07-14 00:00:00', 0);
+INSERT INTO `pesanan` (`kode_pesanan`, `nama_pelanggan`, `kode_menu`, `total_harga`, `tgl_pesanan`, `jumlah`, `status_pesanan`) VALUES
+('PSN001', 'sss', 'KM005', '39000.00', '2025-07-18 00:00:00', 3, 'pending'),
+('PSN002', 'alya', 'KM003', '60000.00', '2025-07-18 00:00:00', 6, 'ready');
 
 -- --------------------------------------------------------
 

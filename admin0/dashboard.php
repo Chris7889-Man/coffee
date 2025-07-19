@@ -90,9 +90,6 @@ while ($row = $recent_stmt->fetch(PDO::FETCH_ASSOC)) {
                     <li class="nav-item">
                         <a class="nav-link" href="data_staff.php">Kelola Staff</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="https://github.com/Chris7889-Man/coffee">BackApp</a>
-                    </li>
                     <?php if ($_SESSION['is_super_admin']): ?>
                         <li class="nav-item">
                             <a class="nav-link" href="manage_admin.php">Kelola Admin</a>

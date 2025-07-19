@@ -20,12 +20,18 @@ Untuk login Staff :
 
 
 Untuk Admin 
-   Username : admin
-   Password : admin123
+   Email    : fadilcs@gmail.com
+   Password : 12345678
+   username : fadil
+
+   Email    : githanona@gmail.com
+   Password : 12345678
+   username : nona
 
 Untuk Super Admin
    Email    : admin@cinema221065.com
-   Password : adminadmin
+   Password : admin123 [fadilcs123]
+   username : admin 
 
 
 

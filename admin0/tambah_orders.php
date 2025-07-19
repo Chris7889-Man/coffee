@@ -112,12 +112,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="mb-3">
             <label class="form-label">Status Pesanan</label>
             <select name="status_pesanan" class="form-control" required>
-                <option value="menunggu">Menunggu</option>
-                <option value="dikonfirmasi">Dikonfirmasi</option>
-                <option value="diproses">Diproses</option>
-                <option value="siap">Siap</option>
-                <option value="selesai">Selesai</option>
-                <option value="batal">Batal</option>
+                <option value="pending">pending</option>
+                <option value="confirmed">confirmed</option>
+                <option value="preparing">preparing</option>
+                <option value="ready">ready</option>
+                <option value="completed">completed</option>
+                <option value="canceled">canceled</option>
             </select>
         </div>
         <button type="submit" class="btn btn-success">Simpan</button>

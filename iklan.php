@@ -143,8 +143,8 @@
         <p>Temukan berbagai pilihan kopi premium dan minuman segar lainnya.<br>
             Pesan sekarang, rasakan kenikmatannya!</p>
         <a href="../karyawan/index.php" class="cta">Masuk Staff</a>
-        <a href="../admin/index.php" class="cta">Masuk Admin</a>
-        <a href="index.php" class="cta">Masuk Super Admin</a>
+        <a href="../admin0/index.php" class="cta">Masuk Admin</a>
+        <a href="../admin/index.php" class="cta">Masuk Super Admin</a>
     </section>
 
     <!-- GALERI PRODUK KOPI -->
