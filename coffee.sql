@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Jul 18, 2025 at 10:03 PM
+-- Generation Time: Jul 19, 2025 at 12:17 AM
 -- Server version: 8.0.30
 -- PHP Version: 8.1.10
 
@@ -41,7 +41,9 @@ CREATE TABLE `admin` (
 --
 
 INSERT INTO `admin` (`username`, `password`, `nama_admin`, `email`, `is_super_admin`, `created_at`) VALUES
-('admin', '$2y$10$24n7U98KT7eCM.ei0bxcyuGvdii9OkLw40sQ3vQLrMNloZ0iPDbb6', 'Super Admin', 'admin@cinema221065.com', 1, '2025-06-25 16:38:16');
+('admin', '$2y$10$24n7U98KT7eCM.ei0bxcyuGvdii9OkLw40sQ3vQLrMNloZ0iPDbb6', 'Super Admin', 'admin@cinema221065.com', 1, '2025-06-25 16:38:16'),
+('fadil', '$2y$10$HUK4qMVVII1dnPHrMjq5OOZQrCGk7sovgjSl1Dlr5/4oW.9/pUuxi', 'fadilcs', 'fadilcs@gmail.com', 0, '2025-07-18 22:46:52'),
+('nona', '$2y$10$PDewoFfMLFruYzHfjK2uWu77VeuDen2YtYf/06wxapRDU9cI6VMs6', 'githa', 'githanonaQ@gmail.com', 0, '2025-07-18 22:54:54');
 
 -- --------------------------------------------------------
 
@@ -64,12 +66,12 @@ CREATE TABLE `menu` (
 --
 
 INSERT INTO `menu` (`kode_menu`, `nama_menu`, `kategori`, `harga`, `status`, `created_at`, `stok`) VALUES
-('KM001', 'vanila', 'Non Coffe', 12000, 'available', '2025-07-14 08:17:49', 15),
-('KM002', 'gula aren', 'Non Coffe', 15000, 'available', '2025-07-14 08:19:51', 5),
-('KM003', 'coffe lathe', 'Coffe', 10000, 'available', '2025-07-14 08:20:29', 5),
-('KM004', 'cokolate ', 'Non Coffe', 12000, 'available', '2025-07-17 20:28:02', 5),
+('KM001', 'vanila', 'Non Coffe', 12000, 'available', '2025-07-14 08:17:49', 10),
+('KM002', 'gula aren', 'Non Coffe', 15000, 'available', '2025-07-14 08:19:51', 10),
+('KM003', 'coffe lathe', 'Coffe', 10000, 'available', '2025-07-14 08:20:29', 10),
+('KM004', 'cokolate ', 'Non Coffe', 12000, 'available', '2025-07-17 20:28:02', 10),
 ('KM005', 'grean tea', 'Non Coffe', 13000, 'available', '2025-07-17 20:28:44', 10),
-('KM006', 'Toramoka', 'Coffe', 12000, 'available', '2025-07-17 21:31:24', 9);
+('KM006', 'Toramoka', 'Coffe', 12000, 'available', '2025-07-17 21:31:24', 10);
 
 -- --------------------------------------------------------
 
@@ -92,8 +94,7 @@ CREATE TABLE `pesanan` (
 --
 
 INSERT INTO `pesanan` (`kode_pesanan`, `nama_pelanggan`, `kode_menu`, `total_harga`, `tgl_pesanan`, `jumlah`, `status_pesanan`) VALUES
-('PSN001', 'sss', 'KM005', '39000.00', '2025-07-18 00:00:00', 3, 'pending'),
-('PSN002', 'alya', 'KM003', '60000.00', '2025-07-18 00:00:00', 6, 'ready');
+('PSN001', 'dwi', 'KM006', '12000.00', '2025-07-18 00:00:00', 1, 'ready');
 
 -- --------------------------------------------------------
 
