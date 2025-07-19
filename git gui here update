@@ -1,0 +1,98 @@
+M S I@MSI MINGW64 /c/laragon/www/coffee (main)
+$ git status
+On branch main
+Your branch is up to date with 'origin/main'.
+
+Changes not staged for commit:
+  (use "git add/rm <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+        modified:   admin/dashboard.php
+        modified:   admin/detail_pesanan.php
+        modified:   admin/edit_menu.php
+        modified:   admin/edit_orders.php
+        modified:   admin/manage_admin.php
+        modified:   admin/manage_menu.php
+        modified:   admin/manage_orders.php
+        modified:   admin/menu.php
+        modified:   admin/tambah_menu.php
+        modified:   admin/tambah_orders.php
+        modified:   classes/Pesanan.php
+        modified:   coffee.sql
+        modified:   config/database.php
+        modified:   dokumentasi.md
+        modified:   iklan.php
+        modified:   karyawan/dashboard.php
+        modified:   karyawan/detail_pesanan.php
+        modified:   karyawan/index.php
+        deleted:    karyawan/laporan_harian.php
+        modified:   karyawan/pesan_minuman.php
+        modified:   karyawan/proses_pesanan.php
+        modified:   karyawan/view_menu.php
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        admin/laporan_harian.php
+        admin0/
+        assets/admincoffe.jpg
+        karyawan/order_pesanan.php
+
+no changes added to commit (use "git add" and/or "git commit -a")
+
+M S I@MSI MINGW64 /c/laragon/www/coffee (main)
+$ git add .
+warning: in the working copy of 'coffee.sql', LF will be replaced by CRLF the next time Git touches it
+
+M S I@MSI MINGW64 /c/laragon/www/coffee (main)
+$ git commit -m 'apdate codingan terbaru'
+[main 690cb44] apdate codingan terbaru
+ 47 files changed, 4852 insertions(+), 640 deletions(-)
+ create mode 100644 admin/laporan_harian.php
+ create mode 100644 admin0/dashboard.php
+ create mode 100644 admin0/data_staff.php
+ create mode 100644 admin0/delete_menu.php
+ create mode 100644 admin0/delete_orders.php
+ create mode 100644 admin0/detail_pesanan.php
+ create mode 100644 admin0/edit_menu.php
+ create mode 100644 admin0/edit_orders.php
+ create mode 100644 admin0/index.php
+ create mode 100644 admin0/laporan_harian.php
+ create mode 100644 admin0/login.php
+ create mode 100644 admin0/logout.php
+ create mode 100644 admin0/manage_admin.php
+ create mode 100644 admin0/manage_customers.php
+ create mode 100644 admin0/manage_menu.php
+ create mode 100644 admin0/manage_orders.php
+ create mode 100644 admin0/menu.php
+ create mode 100644 admin0/order_detail.php
+ create mode 100644 admin0/pesanan.php
+ create mode 100644 admin0/proses_tambah_staff.php
+ create mode 100644 admin0/tambah_menu.php
+ create mode 100644 admin0/tambah_orders.php
+ create mode 100644 admin0/tambah_staff.php
+ create mode 100644 assets/admincoffe.jpg
+ delete mode 100644 karyawan/laporan_harian.php
+ create mode 100644 karyawan/order_pesanan.php
+
+M S I@MSI MINGW64 /c/laragon/www/coffee (main)
+$ git remote -v
+origin  https://github.com/Chris7889-Man/coffee.git (fetch)
+origin  https://github.com/Chris7889-Man/coffee.git (push)
+
+M S I@MSI MINGW64 /c/laragon/www/coffee (main)
+$ git branch
+* main
+
+M S I@MSI MINGW64 /c/laragon/www/coffee (main)
+$ git push origin main
+Enumerating objects: 60, done.
+Counting objects: 100% (60/60), done.
+Delta compression using up to 12 threads
+Compressing objects: 100% (34/34), done.
+Writing objects: 100% (35/35), 66.24 KiB | 7.36 MiB/s, done.
+Total 35 (delta 21), reused 0 (delta 0), pack-reused 0 (from 0)
+remote: Resolving deltas: 100% (21/21), completed with 16 local objects.
+To https://github.com/Chris7889-Man/coffee.git
+   4807583..690cb44  main -> main
+
+M S I@MSI MINGW64 /c/laragon/www/coffee (main)
+$ exit
