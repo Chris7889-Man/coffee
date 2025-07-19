@@ -9,16 +9,29 @@ class Menu {
     public $harga;
     public $status;
     public $stok;
-    public $created_at;
 
     public function __construct($db) {
         $this->conn = $db;
     }
-    
-    // Create menu
+
+    // Method untuk mengambil kode menu terakhir
+    public function getLastKodeMenu() {
+        $query = "SELECT kode_menu FROM " . $this->table_name . " ORDER BY kode_menu DESC LIMIT 1";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row ? $row['kode_menu'] : null;
+    }
+
+    // Method untuk menambahkan menu baru
     public function create() {
         $query = "INSERT INTO " . $this->table_name . " 
-            SET kode_menu=:kode_menu, nama_menu=:nama_menu, kategori=:kategori, harga=:harga, status=:status, stok=:stok";
+            SET kode_menu = :kode_menu,
+                nama_menu = :nama_menu,
+                kategori = :kategori,
+                harga = :harga,
+                status = :status,
+                stok = :stok";
 
         $stmt = $this->conn->prepare($query);
 
@@ -35,6 +48,10 @@ class Menu {
 
         return $stmt->execute();
     }
+
+
+
+
 
     // Read all menu
     public function read() {

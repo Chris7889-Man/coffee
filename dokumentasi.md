@@ -30,7 +30,7 @@ Untuk Admin
 
 Untuk Super Admin
    Email    : admin@cinema221065.com
-   Password : admin123 [fadilcs123]
+   Password : admin123 
    username : admin 
 
 

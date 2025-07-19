@@ -91,9 +91,7 @@ while ($row = $recent_stmt->fetch(PDO::FETCH_ASSOC)) {
                         <a class="nav-link" href="data_staff.php">Kelola Staff</a>
                     </li>
                     <?php if ($_SESSION['is_super_admin']): ?>
-                        <li class="nav-item">
-                            <a class="nav-link" href="manage_admin.php">Kelola Admin</a>
-                        </li>
+                
                     <?php endif; ?>
                 </ul>
                 <ul class="navbar-nav">

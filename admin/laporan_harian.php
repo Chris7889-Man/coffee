@@ -3,7 +3,7 @@ session_start();
 require_once __DIR__ . '/../config/database.php';
 
 // Proteksi akses staff
-if(!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
+if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
     header("Location: login.php");
     exit();
 }
@@ -16,74 +16,78 @@ $selected_date = isset($_GET['date']) ? $_GET['date'] : date('Y-m-d');
 
 // Query untuk mendapatkan pesanan berdasarkan tanggal
 $query = "SELECT p.*, m.nama_menu, m.harga 
-        FROM pesanan p 
-        LEFT JOIN menu m ON p.kode_menu = m.kode_menu 
-        WHERE DATE(p.tgl_pesanan) = :tgl 
-        ORDER BY p.tgl_pesanan DESC";
+          FROM pesanan p 
+          LEFT JOIN menu m ON p.kode_menu = m.kode_menu 
+          WHERE DATE(p.tgl_pesanan) = :tgl 
+          ORDER BY p.tgl_pesanan DESC";
 $stmt = $db->prepare($query);
 $stmt->bindParam(':tgl', $selected_date);
 $stmt->execute();
 $pesanan_list = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Hitung statistik
+// Hitung statistik total pesanan dan pendapatan dari yang selesai saja
 $total_pesanan = count($pesanan_list);
 $total_pendapatan = 0;
 $status_count = [
-    'menunggu' => 0,
-    'dikonfirmasi' => 0,
-    'diproses' => 0,
-    'siap' => 0,
-    'selesai' => 0,
-    'batal' => 0
+    'Menunggu' => 0,
+    'Dikonfirmasi' => 0,
+    'Diproses' => 0,
+    'Siap' => 0,
+    'Selesai' => 0,
+    'Batal' => 0
 ];
 
-
 foreach ($pesanan_list as $row) {
-    if ($row['status_pesanan'] !== 'batal') {
+    $statusUc = ucfirst(strtolower($row['status_pesanan']));
+    if (isset($status_count[$statusUc])) {
+        $status_count[$statusUc]++;
+    }
+    if ($statusUc === 'Selesai') {
         $total_pendapatan += $row['total_harga'];
     }
-    $status_count[$row['status_pesanan']]++;
 }
 
-// Query untuk mendapatkan menu terlaris
+// Query menu terlaris (hanya hitung pesanan yang selesai)
 $query_popular = "SELECT m.nama_menu, SUM(p.jumlah) as total_terjual, COUNT(*) as total_order
-                FROM pesanan p 
-                JOIN menu m ON p.kode_menu = m.kode_menu 
-                WHERE DATE(p.tgl_pesanan) = :tgl AND p.status_pesanan != 'batal'
-                GROUP BY p.kode_menu, m.nama_menu
-                ORDER BY total_terjual DESC 
-                LIMIT 5";
+                  FROM pesanan p 
+                  JOIN menu m ON p.kode_menu = m.kode_menu 
+                  WHERE DATE(p.tgl_pesanan) = :tgl AND p.status_pesanan = 'selesai'
+                  GROUP BY p.kode_menu, m.nama_menu
+                  ORDER BY total_terjual DESC 
+                  LIMIT 5";
 $stmt_popular = $db->prepare($query_popular);
 $stmt_popular->bindParam(':tgl', $selected_date);
 $stmt_popular->execute();
 $menu_popular = $stmt_popular->fetchAll(PDO::FETCH_ASSOC);
 
-// Query untuk perbandingan dengan hari sebelumnya
+// Ambil data hari sebelumnya untuk perbandingan
 $yesterday = date('Y-m-d', strtotime($selected_date . ' -1 day'));
-$query_yesterday = "SELECT COUNT(*) as total_pesanan, SUM(total_harga) as total_pendapatan
-                    FROM pesanan 
-                    WHERE DATE(tgl_pesanan) = :tgl AND status_pesanan != 'batal'";
+$query_yesterday = "SELECT 
+      COUNT(*) as total_pesanan,
+      SUM(CASE WHEN status_pesanan = 'selesai' THEN total_harga ELSE 0 END) as total_pendapatan
+    FROM pesanan 
+    WHERE DATE(tgl_pesanan) = :tgl";
 $stmt_yesterday = $db->prepare($query_yesterday);
 $stmt_yesterday->bindParam(':tgl', $yesterday);
 $stmt_yesterday->execute();
 $yesterday_data = $stmt_yesterday->fetch(PDO::FETCH_ASSOC);
 ?>
+
 <!DOCTYPE html>
 <html lang="id">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Laporan Harian - Coffee Shop</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
     <style>
         body {
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             min-height: 100vh;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-
         .page-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -91,100 +95,85 @@ $yesterday_data = $stmt_yesterday->fetch(PDO::FETCH_ASSOC);
             margin-bottom: 2rem;
             border-radius: 0 0 20px 20px;
         }
-
         .stat-card {
             background: white;
             border-radius: 15px;
             padding: 1.5rem;
             margin-bottom: 1.5rem;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
             border: none;
             transition: transform 0.3s ease;
         }
-
         .stat-card:hover {
             transform: translateY(-5px);
         }
-
-        .stat-card .stat-icon {
+        .stat-icon {
             font-size: 2.5rem;
             margin-bottom: 1rem;
         }
-
-        .stat-card .stat-number {
+        .stat-number {
             font-size: 2rem;
             font-weight: bold;
             margin-bottom: 0.5rem;
         }
-
-        .stat-card .stat-label {
+        .stat-label {
             color: #6c757d;
             font-size: 0.9rem;
         }
-
         .comparison-badge {
             font-size: 0.8rem;
             padding: 0.25rem 0.5rem;
             border-radius: 10px;
             margin-top: 0.5rem;
         }
-
         .chart-container {
             background: white;
             border-radius: 15px;
             padding: 2rem;
             margin-bottom: 2rem;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
-
         .table-container {
             background: white;
             border-radius: 15px;
             padding: 2rem;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
-
         .table th {
             background: #f8f9fa;
             border: none;
             font-weight: 600;
             color: #495057;
         }
-
         .table td {
             border: none;
             vertical-align: middle;
         }
-
         .status-badge {
             padding: 0.4rem 0.8rem;
             border-radius: 20px;
             font-size: 0.8rem;
             font-weight: 600;
         }
-
         .filter-section {
             background: white;
             border-radius: 15px;
             padding: 1.5rem;
             margin-bottom: 2rem;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
-
         .btn-primary {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border: none;
             border-radius: 25px;
             padding: 0.5rem 1.5rem;
         }
-
         .btn-secondary {
             background: #6c757d;
             border: none;
             border-radius: 25px;
             padding: 0.5rem 1.5rem;
         }
-
         .popular-menu-item {
             background: #f8f9fa;
             border-radius: 10px;
@@ -192,7 +181,6 @@ $yesterday_data = $stmt_yesterday->fetch(PDO::FETCH_ASSOC);
             margin-bottom: 0.5rem;
             border-left: 4px solid #667eea;
         }
-
         .print-btn {
             position: fixed;
             bottom: 20px;
@@ -204,19 +192,16 @@ $yesterday_data = $stmt_yesterday->fetch(PDO::FETCH_ASSOC);
             height: 60px;
             color: white;
             font-size: 1.2rem;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
             z-index: 1000;
         }
-
         @media print {
             .no-print {
                 display: none !important;
             }
-
             body {
                 background: white !important;
             }
-
             .page-header {
                 background: #667eea !important;
                 -webkit-print-color-adjust: exact;
@@ -267,8 +252,7 @@ $yesterday_data = $stmt_yesterday->fetch(PDO::FETCH_ASSOC);
                     </div>
                     <div class="col-md-6">
                         <form method="GET" class="d-flex gap-2">
-                            <input type="date" name="date" class="form-control" value="<?php echo $selected_date; ?>"
-                                max="<?php echo date('Y-m-d'); ?>">
+                            <input type="date" name="date" class="form-control" value="<?php echo $selected_date; ?>" max="<?php echo date('Y-m-d'); ?>" />
                             <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-search"></i> Lihat
                             </button>
@@ -279,6 +263,7 @@ $yesterday_data = $stmt_yesterday->fetch(PDO::FETCH_ASSOC);
 
             <!-- Statistics Cards -->
             <div class="row">
+                <!-- Total Pesanan -->
                 <div class="col-lg-3 col-md-6">
                     <div class="stat-card text-center">
                         <div class="stat-icon text-primary">
@@ -287,9 +272,9 @@ $yesterday_data = $stmt_yesterday->fetch(PDO::FETCH_ASSOC);
                         <div class="stat-number text-primary"><?php echo $total_pesanan; ?></div>
                         <div class="stat-label">Total Pesanan</div>
                         <?php
-                        $pesanan_diff = $total_pesanan - ($yesterday_data['total_pesanan'] ?? 0);
-                        $badge_class = $pesanan_diff >= 0 ? 'bg-success' : 'bg-danger';
-                        $icon = $pesanan_diff >= 0 ? 'fa-arrow-up' : 'fa-arrow-down';
+                            $pesanan_diff = $total_pesanan - ($yesterday_data['total_pesanan'] ?? 0);
+                            $badge_class = $pesanan_diff >= 0 ? 'bg-success' : 'bg-danger';
+                            $icon = $pesanan_diff >=0 ? 'fa-arrow-up' : 'fa-arrow-down';
                         ?>
                         <div class="comparison-badge <?php echo $badge_class; ?> text-white">
                             <i class="fas <?php echo $icon; ?>"></i> <?php echo abs($pesanan_diff); ?>
@@ -297,45 +282,52 @@ $yesterday_data = $stmt_yesterday->fetch(PDO::FETCH_ASSOC);
                     </div>
                 </div>
 
+                <!-- Total Pendapatan -->
                 <div class="col-lg-3 col-md-6">
                     <div class="stat-card text-center">
                         <div class="stat-icon text-success">
                             <i class="fas fa-money-bill-wave"></i>
                         </div>
-                        <div class="stat-number text-success">Rp
-                            <?php echo number_format($total_pendapatan, 0, ',', '.'); ?></div>
+                        <div class="stat-number text-success">Rp <?php echo number_format($total_pendapatan, 0, ',', '.'); ?></div>
                         <div class="stat-label">Total Pendapatan</div>
                         <?php
-                        $pendapatan_diff = $total_pendapatan - ($yesterday_data['total_pendapatan'] ?? 0);
-                        $badge_class = $pendapatan_diff >= 0 ? 'bg-success' : 'bg-danger';
-                        $icon = $pendapatan_diff >= 0 ? 'fa-arrow-up' : 'fa-arrow-down';
+                            $pendapatan_diff = $total_pendapatan - ($yesterday_data['total_pendapatan'] ?? 0);
+                            $badge_class = $pendapatan_diff >= 0 ? 'bg-success' : 'bg-danger';
+                            $icon = $pendapatan_diff >=0 ? 'fa-arrow-up' : 'fa-arrow-down';
                         ?>
                         <div class="comparison-badge <?php echo $badge_class; ?> text-white">
-                            <i class="fas <?php echo $icon; ?>"></i> Rp
-                            <?php echo number_format(abs($pendapatan_diff), 0, ',', '.'); ?>
+                            <i class="fas <?php echo $icon; ?>"></i> Rp <?php echo number_format(abs($pendapatan_diff), 0, ',', '.'); ?>
                         </div>
                     </div>
                 </div>
 
+                <!-- Pesanan Menunggu -->
                 <div class="col-lg-3 col-md-6">
                     <div class="stat-card text-center">
                         <div class="stat-icon text-warning">
                             <i class="fas fa-clock"></i>
                         </div>
-                        <div class="stat-number text-warning"><?php echo $status_count['menunggu']; ?></div>
+                        <div class="stat-number text-warning"><?php echo $status_count['Menunggu']; ?></div>
                         <div class="stat-label">Pesanan Menunggu</div>
                     </div>
                 </div>
 
+                <!-- Pesanan Selesai -->
                 <div class="col-lg-3 col-md-6">
                     <div class="stat-card text-center">
                         <div class="stat-icon text-info">
                             <i class="fas fa-check-circle"></i>
                         </div>
-                        <div class="stat-number text-info"><?php echo $status_count['selesai']; ?></div>
+                        <div class="stat-number text-info"><?php echo $status_count['Selesai']; ?></div>
                         <div class="stat-label">Pesanan Selesai</div>
                     </div>
                 </div>
+            </div>
+
+            <!-- Chart Batang Status Pesanan -->
+            <div class="chart-container">
+                <h5><i class="fas fa-chart-bar"></i> Statistik Status Pesanan</h5>
+                <canvas id="statusChart" height="150"></canvas>
             </div>
 
             <!-- Popular Menu -->
@@ -357,9 +349,7 @@ $yesterday_data = $stmt_yesterday->fetch(PDO::FETCH_ASSOC);
                                         </div>
                                     </div>
                                     <div class="progress mt-2" style="height: 6px;">
-                                        <div class="progress-bar"
-                                            style="width: <?php echo ($menu['total_terjual'] / $menu_popular[0]['total_terjual']) * 100; ?>%">
-                                        </div>
+                                        <div class="progress-bar" style="width: <?php echo ($menu['total_terjual'] / $menu_popular[0]['total_terjual']) * 100; ?>%"></div>
                                     </div>
                                 </div>
                             </div>
@@ -368,52 +358,35 @@ $yesterday_data = $stmt_yesterday->fetch(PDO::FETCH_ASSOC);
                 </div>
             <?php endif; ?>
 
-            <!-- Status Distribution -->
+            <!-- Status Distribution Info -->
             <div class="row">
                 <div class="col-md-6">
                     <div class="chart-container">
                         <h5><i class="fas fa-chart-pie"></i> Distribusi Status Pesanan</h5>
                         <div class="row">
+                            <?php foreach ($status_count as $status => $count): 
+                                $classMap = [
+                                    'Menunggu' => 'text-warning',
+                                    'Dikonfirmasi' => 'text-info',
+                                    'Diproses' => 'text-secondary',
+                                    'Siap' => 'text-primary',
+                                    'Selesai' => 'text-success',
+                                    'Batal' => 'text-danger'
+                                ];
+                                $txtClass = $classMap[$status] ?? 'text-muted';
+                            ?>
                             <div class="col-6">
                                 <div class="text-center p-3">
-                                    <div class="text-warning fs-2"><?php echo $status_count['menunggu']; ?></div>
-                                    <div class="text-muted">Menunggu</div>
+                                    <div class="<?php echo $txtClass; ?> fs-2"><?php echo $count; ?></div>
+                                    <div class="text-muted"><?php echo $status; ?></div>
                                 </div>
                             </div>
-                            <div class="col-6">
-                                <div class="text-center p-3">
-                                    <div class="text-info fs-2"><?php echo $status_count['dikonfirmasi']; ?></div>
-                                    <div class="text-muted">Dikonfirmasi</div>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="text-center p-3">
-                                    <div class="text-info fs-2"><?php echo $status_count['diproses']; ?></div>
-                                    <div class="text-muted">Diproses</div>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="text-center p-3">
-                                    <div class="text-info fs-2"><?php echo $status_count['siap']; ?></div>
-                                    <div class="text-muted">Siap</div>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="text-center p-3">
-                                    <div class="text-success fs-2"><?php echo $status_count['selesai']; ?></div>
-                                    <div class="text-muted">Selesai</div>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="text-center p-3">
-                                    <div class="text-danger fs-2"><?php echo $status_count['batal']; ?></div>
-                                    <div class="text-muted">Batal</div>
-                                </div>
-                            </div>
+                            <?php endforeach; ?>
                         </div>
                     </div>
                 </div>
 
+                <!-- Perbandingan Hari Sebelumnya -->
                 <div class="col-md-6">
                     <div class="chart-container">
                         <h5><i class="fas fa-chart-bar"></i> Perbandingan Hari Sebelumnya</h5>
@@ -421,19 +394,15 @@ $yesterday_data = $stmt_yesterday->fetch(PDO::FETCH_ASSOC);
                             <div class="col-6">
                                 <div class="p-3">
                                     <div class="text-muted mb-2">Kemarin</div>
-                                    <div class="fw-bold"><?php echo $yesterday_data['total_pesanan'] ?? 0; ?> pesanan
-                                    </div>
-                                    <div class="text-success">Rp
-                                        <?php echo number_format($yesterday_data['total_pendapatan'] ?? 0, 0, ',', '.'); ?>
-                                    </div>
+                                    <div class="fw-bold"><?php echo $yesterday_data['total_pesanan'] ?? 0; ?> pesanan</div>
+                                    <div class="text-success">Rp <?php echo number_format($yesterday_data['total_pendapatan'] ?? 0, 0, ',', '.'); ?></div>
                                 </div>
                             </div>
                             <div class="col-6">
                                 <div class="p-3">
                                     <div class="text-muted mb-2">Hari ini</div>
                                     <div class="fw-bold"><?php echo $total_pesanan; ?> pesanan</div>
-                                    <div class="text-success">Rp
-                                        <?php echo number_format($total_pendapatan, 0, ',', '.'); ?></div>
+                                    <div class="text-success">Rp <?php echo number_format($total_pendapatan, 0, ',', '.'); ?></div>
                                 </div>
                             </div>
                         </div>
@@ -441,7 +410,7 @@ $yesterday_data = $stmt_yesterday->fetch(PDO::FETCH_ASSOC);
                 </div>
             </div>
 
-            <!-- Order Details Table -->
+            <!-- Detail Pesanan Table -->
             <div class="table-container">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h5><i class="fas fa-list"></i> Detail Pesanan</h5>
@@ -476,17 +445,15 @@ $yesterday_data = $stmt_yesterday->fetch(PDO::FETCH_ASSOC);
                                         <td>
                                             <?php
                                             $status_classes = [
-                                                'menunggu' => 'bg-warning text-dark',   // Kuning
-                                                'dikonfirmasi' => 'bg-info text-white',     // Biru muda
-                                                'diproses' => 'bg-secondary text-white',// Abu-abu
-                                                'siap' => 'bg-primary text-white',  // Biru
-                                                'selesai' => 'bg-success text-white',  // Hijau
-                                                'batal' => 'bg-danger text-white'    // Merah
+                                                'menunggu' => 'bg-warning text-dark',
+                                                'dikonfirmasi' => 'bg-info text-white',
+                                                'diproses' => 'bg-secondary text-white',
+                                                'siap' => 'bg-primary text-white',
+                                                'selesai' => 'bg-success text-white',
+                                                'batal' => 'bg-danger text-white',
                                             ];
-
-
-
-                                            $status_class = $status_classes[$pesanan['status_pesanan']] ?? 'bg-secondary text-white';
+                                            $sp = strtolower($pesanan['status_pesanan']);
+                                            $status_class = $status_classes[$sp] ?? 'bg-secondary text-white';
                                             ?>
                                             <span class="status-badge <?php echo $status_class; ?>">
                                                 <?php echo ucfirst($pesanan['status_pesanan']); ?>
@@ -507,11 +474,54 @@ $yesterday_data = $stmt_yesterday->fetch(PDO::FETCH_ASSOC);
             </div>
         </div>
     </div>
-
+    
     <!-- Print Button -->
     <button class="print-btn no-print" onclick="window.print()">
         <i class="fas fa-print"></i>
     </button>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const statusLabels = <?php echo json_encode(array_keys($status_count)); ?>;
+        const statusData = <?php echo json_encode(array_values($status_count)); ?>;
+
+        const ctx = document.getElementById('statusChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: statusLabels,
+                datasets: [{
+                    label: 'Jumlah Pesanan',
+                    data: statusData,
+                    backgroundColor: [
+                        '#ffc107', // Menunggu
+                        '#0dcaf0', // Dikonfirmasi
+                        '#6c757d', // Diproses
+                        '#0d6efd', // Siap
+                        '#198754', // Selesai
+                        '#dc3545'  // Batal
+                    ],
+                    borderRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { stepSize: 1 }
+                    }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: { label: ctx => ctx.parsed.y + ' pesanan' }
+                    }
+                }
+            }
+        });
+    </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>

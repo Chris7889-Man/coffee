@@ -312,7 +312,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="card-header">
             <i class="fas fa-coffee"></i>
             <h2>Staff Login</h2>
-            <p class="text-muted mb-0">Coffee Shop Management System</p>
+            <p class="text-muted mb-0">Gajian Sudah Dekat</p>
         </div>
         <div class="card-body">
             <?php if ($message): ?>

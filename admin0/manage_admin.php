@@ -259,7 +259,7 @@ $stmt->execute();
                                 <div class="form-check">
                                     <input type="checkbox" name="is_super_admin" id="is_super_admin" class="form-check-input"
                                     <?= isset($_POST['is_super_admin']) ? 'checked' : '' ?> />
-                                    <label for="is_super_admin" class="form-check-label fw-semibold">Super Admin</label>
+                                    <label for="is_super_admin" class="form-check-label fw-semibold">Admin</label>
                                 </div>
                             </div>
                             <div class="col-12 text-end">

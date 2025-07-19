@@ -3,15 +3,16 @@ session_start();
 require_once __DIR__ . '/../config/database.php';
 
 // Pastikan hanya super admin yang bisa mengakses
-if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true || !($_SESSION['is_super_admin'] ?? false)) {
-    header("Location: dashboard.php");
+if (!isset($_SESSION['admin_logged_in']) || $_SESSION['is_super_admin'] != 1) {
+    header("Location: login.php");
     exit();
 }
+
 
 $database = new Database();
 $db = $database->getConnection();
 
-$admin_access_secret_password = 'fadilcs123';
+$admin_access_secret_password = 'admin123';
 
 // Logout / tutup akses form tambah admin
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['logout_access'])) {
