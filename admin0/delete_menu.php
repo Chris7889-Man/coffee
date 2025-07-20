@@ -11,6 +11,7 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
 
 // Validasi parameter kode_menu dari URL
 if (!isset($_GET['kode_menu']) || empty($_GET['kode_menu'])) {
+    $_SESSION['message'] = "Kode menu tidak valid.";
     header("Location: manage_menu.php");
     exit();
 }

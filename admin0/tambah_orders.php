@@ -28,49 +28,69 @@ function generateKodePesanan($db) {
 $message = '';
 $kode_pesanan = generateKodePesanan($db);
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+   if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $kode_pesanan = $_POST['kode_pesanan'];
     $nama_pelanggan = $_POST['nama_pelanggan'];
     $kode_menu = $_POST['kode_menu'];
     $jumlah = (int)$_POST['jumlah'];
     $status_pesanan = $_POST['status_pesanan'] ?? '';
-    $tgl_pesanan = date('Y-m-d');
+    date_default_timezone_set('Asia/Makassar');
+    $tgl_pesanan = date('Y-m-d H:i:s');
 
-    // Ambil harga dari menu
-    $query = "SELECT harga FROM menu WHERE kode_menu = :kode_menu";
+    // Ambil harga dan stok sekarang dari menu
+    $query = "SELECT harga, stok FROM menu WHERE kode_menu = :kode_menu";
     $stmt = $db->prepare($query);
     $stmt->bindParam(':kode_menu', $kode_menu);
     $stmt->execute();
     $menu = $stmt->fetch(PDO::FETCH_ASSOC);
     $harga_satuan = $menu['harga'] ?? 0;
-    $total_harga = $harga_satuan * $jumlah;
+    $stok_saat_ini = $menu['stok'] ?? 0;
 
-    // Simpan pesanan tanpa jenis_pesanan dan catatan_pesanan
-    $query = "INSERT INTO pesanan (
-                kode_pesanan, nama_pelanggan, kode_menu, jumlah, total_harga,
-                tgl_pesanan, status_pesanan
-              ) VALUES (
-                :kode_pesanan, :nama_pelanggan, :kode_menu, :jumlah, :total_harga,
-                :tgl_pesanan, :status_pesanan
-              )";
-
-    $stmt = $db->prepare($query);
-    $stmt->bindParam(':kode_pesanan', $kode_pesanan);
-    $stmt->bindParam(':nama_pelanggan', $nama_pelanggan);
-    $stmt->bindParam(':kode_menu', $kode_menu);
-    $stmt->bindParam(':jumlah', $jumlah);
-    $stmt->bindParam(':total_harga', $total_harga);
-    $stmt->bindParam(':tgl_pesanan', $tgl_pesanan);
-    $stmt->bindParam(':status_pesanan', $status_pesanan);
-
-    if ($stmt->execute()) {
-        $message = "Pesanan berhasil ditambahkan!";
-        $kode_pesanan = generateKodePesanan($db);
+    // Cek stok cukup
+    if ($jumlah > $stok_saat_ini) {
+        $message = "Stok tidak cukup. Stok saat ini: $stok_saat_ini";
     } else {
-        $message = "Gagal menambahkan pesanan.";
+        $total_harga = $harga_satuan * $jumlah;
+
+        // Simpan pesanan
+        $query = "INSERT INTO pesanan (
+                    kode_pesanan, nama_pelanggan, kode_menu, jumlah, total_harga,
+                    tgl_pesanan, status_pesanan
+                    ) VALUES (
+                    :kode_pesanan, :nama_pelanggan, :kode_menu, :jumlah, :total_harga,
+                    :tgl_pesanan, :status_pesanan
+                    )";
+
+        $stmt = $db->prepare($query);
+        $stmt->bindParam(':kode_pesanan', $kode_pesanan);
+        $stmt->bindParam(':nama_pelanggan', $nama_pelanggan);
+        $stmt->bindParam(':kode_menu', $kode_menu);
+        $stmt->bindParam(':jumlah', $jumlah);
+        $stmt->bindParam(':total_harga', $total_harga);
+        $stmt->bindParam(':tgl_pesanan', $tgl_pesanan);
+        $stmt->bindParam(':status_pesanan', $status_pesanan);
+
+        if ($stmt->execute()) {
+            // Update stok menu
+            $stok_baru = $stok_saat_ini - $jumlah;
+            $updateStokQuery = "UPDATE menu SET stok = :stok WHERE kode_menu = :kode_menu";
+            $updateStmt = $db->prepare($updateStokQuery);
+            $updateStmt->bindParam(':stok', $stok_baru);
+            $updateStmt->bindParam(':kode_menu', $kode_menu);
+            $updateStmt->execute();
+
+            $message = "Pesanan berhasil ditambahkan! Stok menu diupdate menjadi $stok_baru.";
+            $kode_pesanan = generateKodePesanan($db);
+        } else {
+            $message = "Gagal menambahkan pesanan.";
+        }
     }
 }
+
 ?>
+
+
+
 
 <!DOCTYPE html>
 <html lang="id">
@@ -112,12 +132,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="mb-3">
             <label class="form-label">Status Pesanan</label>
             <select name="status_pesanan" class="form-control" required>
-                <option value="pending">pending</option>
-                <option value="confirmed">confirmed</option>
-                <option value="preparing">preparing</option>
-                <option value="ready">ready</option>
-                <option value="completed">completed</option>
-                <option value="canceled">canceled</option>
+                <option value="Menunggu">Menunggu</option>
+                <option value="Dikonfirmasi">Dikonfirmasi</option>
+                <option value="Diproses">Diproses</option>
+                <option value="Siap">Siap</option>
+                <option value="Selesai">Selesai</option>
+                <option value="Batal">Batal</option>
             </select>
         </div>
         <button type="submit" class="btn btn-success">Simpan</button>

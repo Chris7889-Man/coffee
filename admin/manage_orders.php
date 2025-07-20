@@ -1,12 +1,10 @@
 <?php
 session_start();
-// Ganti timezone dari 'Asia/Makassar' (WITA) ke 'Asia/Jayapura' (WIT)
-date_default_timezone_set('Asia/Jayapura'); // Set timezone ke WIT
+date_default_timezone_set('Asia/Makassar'); // Set timezone ke WIT
 
 require_once __DIR__ . '/../config/database.php';
-require_once __DIR__ . '/../classes/Pesanan.php';
+require_once __DIR__ . '/../classes/pesanan.php';
 
-// Pastikan hanya admin yang sudah login bisa mengakses
 if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
     header("Location: login.php");
     exit();
@@ -16,7 +14,6 @@ $database = new Database();
 $db = $database->getConnection();
 $pesanan = new Pesanan($db);
 
-// Ambil semua pesanan
 $stmt = $pesanan->read();
 ?>
 
@@ -42,9 +39,11 @@ $stmt = $pesanan->read();
                 <tr>
                     <th>Kode Pesanan</th>
                     <th>Nama Pelanggan</th>
+                   <!-- Kolom menu -->
                     <th>Jumlah Pesanan</th>
                     <th>Total Harga</th>
-                    <th>Tanggal & Jam</th>
+                    <th>Tanggal</th>     <!-- Pisah tanggal -->
+                    <th>Jam</th>         <!-- Pisah jam -->
                     <th>Status</th>
                     <th>Aksi</th>
                 </tr>
@@ -54,9 +53,11 @@ $stmt = $pesanan->read();
                 <tr>
                     <td><?= htmlspecialchars($row['kode_pesanan']); ?></td>
                     <td><?= htmlspecialchars($row['nama_pelanggan'] ?? ''); ?></td>
+                    
                     <td><?= htmlspecialchars($row['jumlah'] ?? ''); ?></td>
                     <td>Rp <?= number_format($row['total_harga'], 0, ',', '.'); ?></td>
-                    <td><?= date('d/m/Y H:i', strtotime($row['tgl_pesanan'])); ?></td>
+                    <td><?= date('d/m/Y', strtotime($row['tgl_pesanan'])); ?></td>
+                    <td><?= date('H:i', strtotime($row['tgl_pesanan'])); ?></td>
                     <td><?= htmlspecialchars($row['status_pesanan'] ?? ''); ?></td>
                     <td>
                         <a href="edit_orders.php?kode_pesanan=<?= urlencode($row['kode_pesanan']); ?>" class="btn btn-sm btn-warning">
@@ -72,6 +73,6 @@ $stmt = $pesanan->read();
         </table>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -35,11 +35,13 @@ class Pesanan {
         return false;
     }
 
-    // Read all pesanan
+    // Read all pesanan dengan detail menu dan jumlah
     public function read() {
-        $query = "SELECT kode_pesanan, nama_pelanggan, total_harga, tgl_pesanan,
-            FROM " . $this->table_name . " 
-                ORDER BY tgl_pesanan DESC";
+        $query = "SELECT p.kode_pesanan, p.nama_pelanggan, dp.jumlah, m.nama AS nama_menu, p.tgl_pesanan, p.status_pesanan AS status
+                  FROM " . $this->table_name . " p
+                  LEFT JOIN detail_pesanan dp ON p.kode_pesanan = dp.kode_pesanan
+                  LEFT JOIN menu m ON dp.kode_menu = m.kode_menu
+                  ORDER BY p.tgl_pesanan DESC";
 
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
@@ -49,10 +51,10 @@ class Pesanan {
 
     // Read pesanan by customer
     public function readByCustomer() {
-        $query = "SELECT kode_pesanan, nama_pelanggan, total_harga, tgl_pesanan, 
-            FROM " . $this->table_name . " 
-            WHERE nama_pelanggan = :nama_pelanggan 
-            ORDER BY tgl_pesanan DESC";
+        $query = "SELECT kode_pesanan, nama_pelanggan, total_harga, tgl_pesanan 
+                  FROM " . $this->table_name . " 
+                  WHERE nama_pelanggan = :nama_pelanggan 
+                  ORDER BY tgl_pesanan DESC";
 
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(":nama_pelanggan", $this->nama_pelanggan);
@@ -64,10 +66,10 @@ class Pesanan {
     // Read pesanan by status
     public function readByStatus() {
         $query = "SELECT kode_pesanan, nama_pelanggan, total_harga, tgl_pesanan, 
-                status_pesanan, jenis_pesanan, catatan_pesanan 
-            FROM " . $this->table_name . " 
-            WHERE status_pesanan = :status_pesanan 
-            ORDER BY tgl_pesanan DESC";
+                  status_pesanan, jenis_pesanan, catatan_pesanan 
+                  FROM " . $this->table_name . " 
+                  WHERE status_pesanan = :status_pesanan 
+                  ORDER BY tgl_pesanan DESC";
 
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(":status_pesanan", $this->status_pesanan);
@@ -79,7 +81,8 @@ class Pesanan {
     // Get pesanan by code
     public function getByCode() {
         $query = "SELECT kode_pesanan, nama_pelanggan, total_harga, tgl_pesanan, 
-                    status_pesanan, jenis_pesanan, catatan_pesanan FROM " . $this->table_name . " WHERE kode_pesanan = :kode_pesanan";
+                  status_pesanan, jenis_pesanan, catatan_pesanan 
+                  FROM " . $this->table_name . " WHERE kode_pesanan = :kode_pesanan";
 
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(":kode_pesanan", $this->kode_pesanan);
@@ -102,7 +105,7 @@ class Pesanan {
     // Update status pesanan
     public function updateStatus() {
         $query = "UPDATE " . $this->table_name . " 
-            SET status_pesanan=:status_pesanan WHERE kode_pesanan=:kode_pesanan";
+                  SET status_pesanan=:status_pesanan WHERE kode_pesanan=:kode_pesanan";
 
         $stmt = $this->conn->prepare($query);
 
@@ -118,7 +121,7 @@ class Pesanan {
     // Update pesanan
     public function update() {
         $query = "UPDATE " . $this->table_name . " 
-            SET total_harga=:total_harga, status_pesanan=:status_pesanan, jenis_pesanan=:jenis_pesanan, catatan_pesanan=:catatan_pesanan WHERE kode_pesanan=:kode_pesanan";
+                  SET total_harga=:total_harga, status_pesanan=:status_pesanan, jenis_pesanan=:jenis_pesanan, catatan_pesanan=:catatan_pesanan WHERE kode_pesanan=:kode_pesanan";
 
         $stmt = $this->conn->prepare($query);
 
@@ -157,11 +160,11 @@ class Pesanan {
     public function generateKodePesanan() {
         $date = date('Ymd');
         $query = "SELECT COUNT(*) as total FROM " . $this->table_name . " WHERE DATE(tgl_pesanan) = CURDATE()";
-        
+
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        
+
         $counter = $row['total'] + 1;
         return "ORD" . $date . str_pad($counter, 3, '0', STR_PAD_LEFT);
     }

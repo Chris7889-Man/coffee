@@ -151,12 +151,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="mb-3">
             <label class="form-label">Status Pesanan</label>
             <select name="status_pesanan" class="form-control" required>
-                <option value="pending" <?= $data['status_pesanan'] === 'pending' ? 'selected' : '' ?>>pending</option>
-                <option value="confirmed" <?= $data['status_pesanan'] === 'confirmed' ? 'selected' : '' ?>>confirmed</option>
-                <option value="preparing" <?= $data['status_pesanan'] === 'preparing' ? 'selected' : '' ?>>preparing</option>
-                <option value="ready" <?= $data['status_pesanan'] === 'ready' ? 'selected' : '' ?>>ready</option>
-                <option value="completed" <?= $data['status_pesanan'] === 'completed' ? 'selected' : '' ?>>completed</option>
-                <option value="canceled" <?= $data['status_pesanan'] === 'canceled' ? 'selected' : '' ?>>canceled</option>
+                <option value="Menunggu" <?= $data['status_pesanan'] === 'menunggu' ? 'selected' : '' ?>>Menunggu</option>
+                <option value="Dikonfirmasi" <?= $data['status_pesanan'] === 'dikonfirmasi' ? 'selected' : '' ?>>Dikonfirmasi</option>
+                <option value="Diproses" <?= $data['status_pesanan'] === 'diproses' ? 'selected' : '' ?>>Diproses</option>
+                <option value="Siap" <?= $data['status_pesanan'] === 'siap' ? 'selected' : '' ?>>Siap</option>
+                <option value="Selesai" <?= $data['status_pesanan'] === 'selesai' ? 'selected' : '' ?>>Selesai</option>
+                <option value="Batal" <?= $data['status_pesanan'] === 'batal' ? 'selected' : '' ?>>Batal</option>
             </select>
         </div>
     
