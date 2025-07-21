@@ -125,6 +125,8 @@ $stmt = $menu->read();
             <a href="history_stok.php" class="btn btn-info btn-sm">Lihat Histori</a>
         </div>
 
+        lombok
+
         <table class="table table-bordered">
             <thead>
                 <tr>

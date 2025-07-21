@@ -220,7 +220,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <button type="submit" class="btn btn-primary w-100">Login</button>
             </form>
             <div class="btn-kembali-wrapper">
-                <a href="../iklan.php" class="btn btn-outline-light">
+                <a href="../index.php" class="btn btn-outline-light">
                     <i class="fas fa-arrow-left"></i> Kembali
                 </a>
             </div>

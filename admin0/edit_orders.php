@@ -50,7 +50,6 @@ if ($harga_menu_pilih > 0) {
         $jumlah_saat_ini = 1; // minimal 1
     }
 }
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nama_pelanggan = $_POST['nama_pelanggan'];
     $kode_menu = $_POST['kode_menu'];
@@ -58,11 +57,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $status_pesanan = $_POST['status_pesanan'];
 
     // Ambil harga satuan menu yang baru
-    $stmt_harga_post = $db->prepare("SELECT harga FROM menu WHERE kode_menu = :kode_menu");
+    $stmt_harga_post = $db->prepare("SELECT harga, stok FROM menu WHERE kode_menu = :kode_menu");
     $stmt_harga_post->bindParam(':kode_menu', $kode_menu);
     $stmt_harga_post->execute();
     $menu_post = $stmt_harga_post->fetch(PDO::FETCH_ASSOC);
     $harga_satuan = $menu_post['harga'] ?? 0;
+    $stok_lama_menu = $menu_post['stok'] ?? 0;
 
     // Hitung total harga sesuai jumlah dan harga satuan
     $total_harga = $harga_satuan * $jumlah;
@@ -71,23 +71,151 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($jumlah < 1) {
         $message = "Jumlah pesanan minimal 1.";
     } else {
-        $query = "UPDATE pesanan SET 
-                    nama_pelanggan = :nama_pelanggan,
-                    kode_menu = :kode_menu,
-                    jumlah = :jumlah,
-                    total_harga = :total_harga,
-                    status_pesanan = :status_pesanan
-                  WHERE kode_pesanan = :kode_pesanan";
-        $stmt = $db->prepare($query);
-        $stmt->bindParam(':nama_pelanggan', $nama_pelanggan);
-        $stmt->bindParam(':kode_menu', $kode_menu);
-        $stmt->bindParam(':jumlah', $jumlah);
-        $stmt->bindParam(':total_harga', $total_harga);
-        $stmt->bindParam(':status_pesanan', $status_pesanan);
-        $stmt->bindParam(':kode_pesanan', $kode_pesanan);
+        // Ambil informasi pesanan lama agar dapat mengkalkulasi perubahan stok
+        $stmt_old = $db->prepare("SELECT kode_menu, jumlah FROM pesanan WHERE kode_pesanan = :kode_pesanan");
+        $stmt_old->bindParam(':kode_pesanan', $kode_pesanan);
+        $stmt_old->execute();
+        $old_pesanan = $stmt_old->fetch(PDO::FETCH_ASSOC);
+        if (!$old_pesanan) {
+            $message = "Data pesanan tidak ditemukan.";
+        } else {
+            $old_kode_menu = $old_pesanan['kode_menu'];
+            $old_jumlah = (int)$old_pesanan['jumlah'];
 
-        if ($stmt->execute()) {
-            $message = "Pesanan berhasil diperbarui!";
+            // Hitung stok baru untuk menu lama dan menu baru
+            // Logika update stok: stok = stok + jumlah_pesanan_lama - jumlah_pesanan_baru
+
+            // Jika kode_menu berubah, kita harus mengembalikan stok menu lama dan mengurangi stok menu baru
+            if ($old_kode_menu !== $kode_menu) {
+                // Ambil stok menu lama
+                $stmt_old_menu = $db->prepare("SELECT stok FROM menu WHERE kode_menu = :kode_menu");
+                $stmt_old_menu->bindParam(':kode_menu', $old_kode_menu);
+                $stmt_old_menu->execute();
+                $stok_lama_menu_old = $stmt_old_menu->fetchColumn();
+
+                // Hitung stok baru untuk menu lama dan menu baru
+                $stok_baru_menu_lama = $stok_lama_menu_old + $old_jumlah; // kembalikan stok menu lama
+                $stok_baru_menu_baru = $stok_lama_menu - $jumlah; // kurangi stok menu baru
+
+                if ($stok_baru_menu_baru < 0) {
+                    $message = "Stok menu baru tidak cukup untuk pesanan.";
+                } else {
+                    try {
+                        $db->beginTransaction();
+
+                        // Update pesanan
+                        $query = "UPDATE pesanan SET 
+                                    nama_pelanggan = :nama_pelanggan,
+                                    kode_menu = :kode_menu,
+                                    jumlah = :jumlah,
+                                    total_harga = :total_harga,
+                                    status_pesanan = :status_pesanan
+                                  WHERE kode_pesanan = :kode_pesanan";
+                        $stmt = $db->prepare($query);
+                        $stmt->bindParam(':nama_pelanggan', $nama_pelanggan);
+                        $stmt->bindParam(':kode_menu', $kode_menu);
+                        $stmt->bindParam(':jumlah', $jumlah);
+                        $stmt->bindParam(':total_harga', $total_harga);
+                        $stmt->bindParam(':status_pesanan', $status_pesanan);
+                        $stmt->bindParam(':kode_pesanan', $kode_pesanan);
+                        $stmt->execute();
+
+                        // Update stok menu lama (dikembalikan)
+                        $stmt_update_menu_lama = $db->prepare("UPDATE menu SET stok = :stok WHERE kode_menu = :kode_menu");
+                        $stmt_update_menu_lama->execute([':stok' => $stok_baru_menu_lama, ':kode_menu' => $old_kode_menu]);
+
+                        // Update stok menu baru (dikurangi)
+                        $stmt_update_menu_baru = $db->prepare("UPDATE menu SET stok = :stok WHERE kode_menu = :kode_menu");
+                        $stmt_update_menu_baru->execute([':stok' => $stok_baru_menu_baru, ':kode_menu' => $kode_menu]);
+
+                        $now = date('Y-m-d H:i:s');
+
+                        // Insert history untuk menu lama (stok bertambah karena pesanan lama dibatalkan untuk menu lama)
+                        $stmt_history_old = $db->prepare("INSERT INTO stok_history 
+                            (kode_menu, stok_lama, stok_baru, tgl_update, keterangan)
+                            VALUES (:kode_menu, :stok_lama, :stok_baru, :tgl_update, :keterangan)");
+                        $stmt_history_old->execute([
+                            ':kode_menu' => $old_kode_menu,
+                            ':stok_lama' => $stok_lama_menu_old,
+                            ':stok_baru' => $stok_baru_menu_lama,
+                            ':tgl_update' => $now,
+                            ':keterangan' => "Edit pesanan {$kode_pesanan}: kembalikan stok untuk menu lama"
+                        ]);
+
+                        // Insert history untuk menu baru (stok berkurang karena pesanan baru)
+                        $stmt_history_new = $db->prepare("INSERT INTO stok_history 
+                            (kode_menu, stok_lama, stok_baru, tgl_update, keterangan)
+                            VALUES (:kode_menu, :stok_lama, :stok_baru, :tgl_update, :keterangan)");
+                        $stmt_history_new->execute([
+                            ':kode_menu' => $kode_menu,
+                            ':stok_lama' => $stok_lama_menu,
+                            ':stok_baru' => $stok_baru_menu_baru,
+                            ':tgl_update' => $now,
+                            ':keterangan' => "Edit pesanan {$kode_pesanan}: kurangi stok untuk menu baru"
+                        ]);
+
+                        $db->commit();
+                        $message = "Pesanan berhasil diperbarui!";
+                    } catch (Exception $e) {
+                        $db->rollBack();
+                        $message = "Gagal memperbarui pesanan: " . $e->getMessage();
+                    }
+                }
+            } else {  
+                // Jika menu tidak berubah, hitung perubahan stok berdasarkan selisih jumlah
+
+                $stok_baru = $stok_lama_menu + $old_jumlah - $jumlah; // kembalikan stok lama, lalu kurangi stok baru
+
+                if ($stok_baru < 0) {
+                    $message = "Stok menu tidak cukup untuk pesanan.";
+                } else {
+                    try {
+                        $db->beginTransaction();
+
+                        // Update pesanan
+                        $query = "UPDATE pesanan SET 
+                                    nama_pelanggan = :nama_pelanggan,
+                                    kode_menu = :kode_menu,
+                                    jumlah = :jumlah,
+                                    total_harga = :total_harga,
+                                    status_pesanan = :status_pesanan
+                                  WHERE kode_pesanan = :kode_pesanan";
+                        $stmt = $db->prepare($query);
+                        $stmt->bindParam(':nama_pelanggan', $nama_pelanggan);
+                        $stmt->bindParam(':kode_menu', $kode_menu);
+                        $stmt->bindParam(':jumlah', $jumlah);
+                        $stmt->bindParam(':total_harga', $total_harga);
+                        $stmt->bindParam(':status_pesanan', $status_pesanan);
+                        $stmt->bindParam(':kode_pesanan', $kode_pesanan);
+                        $stmt->execute();
+
+                        // Update stok menu
+                        $stmt_update_menu = $db->prepare("UPDATE menu SET stok = :stok WHERE kode_menu = :kode_menu");
+                        $stmt_update_menu->execute([':stok' => $stok_baru, ':kode_menu' => $kode_menu]);
+
+                        $now = date('Y-m-d H:i:s');
+
+                        // Insert ke stok_history
+                        $stmt_history = $db->prepare("INSERT INTO stok_history 
+                            (kode_menu, stok_lama, stok_baru, tgl_update, keterangan)
+                            VALUES (:kode_menu, :stok_lama, :stok_baru, :tgl_update, :keterangan)");
+                        $stmt_history->execute([
+                            ':kode_menu' => $kode_menu,
+                            ':stok_lama' => $stok_lama_menu,
+                            ':stok_baru' => $stok_baru,
+                            ':tgl_update' => $now,
+                            ':keterangan' => "Edit pesanan {$kode_pesanan}"
+                        ]);
+
+                        $db->commit();
+                        $message = "Pesanan berhasil diperbarui!";
+                    } catch (Exception $e) {
+                        $db->rollBack();
+                        $message = "Gagal memperbarui pesanan: " . $e->getMessage();
+                    }
+                }
+            }
+
             // Ambil ulang data setelah update agar form terisi data terbaru
             $stmt = $db->prepare("SELECT * FROM pesanan WHERE kode_pesanan = :kode_pesanan");
             $stmt->bindParam(':kode_pesanan', $kode_pesanan);
@@ -102,11 +230,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
             $jumlah_saat_ini = $data['jumlah'] ?? 1;
-        } else {
-            $message = "Gagal memperbarui pesanan!";
         }
     }
 }
+
 ?>
 
 <!DOCTYPE html>

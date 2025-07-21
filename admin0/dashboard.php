@@ -200,16 +200,16 @@ my name Rahmadana, welcome to the dashboard of Vibescoffee
                         </div>
                     </div>
 
-                <div class="col-md-3 col-sm-6">
-                    <div class="card card-stat bg-success text-white shadow-sm">
-                        <div class="card-body text-center">
-                            <i class="fas fa-coffee fa-2x mb-2"></i>
-                            <h5>Total Menu</h5>
-                            <div class="display-6 fw-bold"><?= $total_menu ?></div>
+                    <div class="col-md-3 col-sm-6">
+                        <div class="card card-stat bg-success text-white shadow-sm">
+                            <div class="card-body text-center">
+                                <i class="fas fa-coffee fa-2x mb-2"></i>
+                                <h5>Total Menu</h5>
+                                <div class="display-6 fw-bold"><?= $total_menu ?></div>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <!-- <div class="col-md-2 col-sm-6">
+                    <!-- <div class="col-md-2 col-sm-6">
                     <div class="card card-stat bg-info text-white shadow-sm">
                         <div class="card-body text-center">
                             <i class="fas fa-users fa-2x mb-2"></i>
@@ -218,81 +218,86 @@ my name Rahmadana, welcome to the dashboard of Vibescoffee
                         </div>
                     </div>
                 </div> -->
-                <div class="col-md-2 col-sm-6">
-                    <div class="card card-stat bg-warning text-dark shadow-sm">
-                        <div class="card-body text-center">
-                            <i class="fas fa-truck fa-2x mb-2"></i>
-                            <h6 class="mb-1">Jumlah Pembeli</h6>
-                            <div class="fw-bold fs-5"><?= $jumlah_pemasok ?></div>
-                        </div>
-                    </div>
-                </div>
-                <!-- <div class="col-md-2 col-sm-6">
-                    <a href="manage_admin.php" class="text-decoration-none">
-                        <div class="card card-stat bg-secondary text-white shadow-sm">
+                    <div class="col-md-2 col-sm-6">
+                        <div class="card card-stat bg-warning text-dark shadow-sm">
                             <div class="card-body text-center">
-                                <i class="fas fa-user-cog fa-2x mb-2"></i>
-                                <h6 class="mb-1">Jumlah User</h6>
-                                <div class="fw-bold fs-5"><?= $jumlah_user ?></div>
+                                <i class="fas fa-truck fa-2x mb-2"></i>
+                                <h6 class="mb-1">Jumlah Pembeli</h6>
+                                <div class="fw-bold fs-5"><?= $jumlah_pemasok ?></div>
                             </div>
                         </div>
-                    </a>
-                </div> -->
+                    </div>
+                    <div class="col-md-2 col-sm-6">
+                        <a href="manage_admin.php" class="text-decoration-none">
+                            <div class="card card-stat bg-secondary text-white shadow-sm">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-user-cog fa-2x mb-2"></i>
+                                    <h6 class="mb-1">Jumlah User</h6>
+                                    <div class="fw-bold fs-5"><?= $jumlah_user ?></div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
 
-            </div>
-            <!-- /INFO CARDS -->
-
-            <!-- TABEL PESANAN TERBARU -->
-            <div class="card mt-4 shadow-sm">
-                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
-                    <span>Pesanan Terbaru</span>
-                    <a href="manage_orders.php" class="btn btn-light btn-sm"><i class="fas fa-tasks me-1"></i> Lihat
-                        Semua</a>
                 </div>
-                <div class="card-body p-0">
-                    <table class="table table-hover mb-0">
-                        <thead>
-                            <tr>
-                                <th>Kode Pesanan</th>
-                                <th>Nama Pelanggan</th>
-                                <th>Jumlah Pesanan</th>
-                                <th>Total Harga</th>
-                                <th>Tanggal</th>
-                                <th>Jam</th>
-                                <th>Status</th>
-                                <th>Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php if (count($recent_orders) === 0): ?>
+                <!-- /INFO CARDS -->
+
+                <!-- TABEL PESANAN TERBARU -->
+                <div class="card mt-4 shadow-sm">
+                    <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                        <span>Pesanan Terbaru</span>
+                        <a href="manage_orders.php" class="btn btn-light btn-sm"><i class="fas fa-tasks me-1"></i> Lihat
+                            Semua</a>
+                    </div>
+                    <div class="card-body p-0">
+                        <table class="table table-hover mb-0">
+                            <thead>
                                 <tr>
-                                    <td colspan="8" class="text-center">Belum ada data pesanan</td>
+                                    <th>Kode Pesanan</th>
+                                    <th>Nama Pelanggan</th>
+                                    <th>Jumlah Pesanan</th>
+                                    <th>Total Harga</th>
+                                    <th>Tanggal</th>
+                                    <th>Jam</th>
+                                    <th>Status</th>
+                                    <th>Aksi</th>
                                 </tr>
-                            <?php else:
-                                foreach ($recent_orders as $row): ?>
+                            </thead>
+                            <tbody>
+                                <?php if (count($recent_orders) === 0): ?>
                                     <tr>
-                                        <td><?= htmlspecialchars($row['kode_pesanan']); ?></td>
-                                        <td><?= htmlspecialchars($row['nama_pelanggan'] ?? '-'); ?></td>
-                                        <td><?= htmlspecialchars($row['jumlah'] ?? '-'); ?></td>
-                                        <td>Rp <?= number_format($row['total_harga'] ?? 0, 0, ',', '.'); ?></td>
-                                        <td><?= date('d/m/Y', strtotime($row['tgl_pesanan'])); ?></td>
-                                        <td><?= date('H:i', strtotime($row['tgl_pesanan'])); ?></td>
-                                        <td><?= htmlspecialchars($row['status_pesanan'] ?? '-'); ?></td>
-                                        <td>
-                                            <a href="edit_orders.php?kode_pesanan=<?= urlencode($row['kode_pesanan']); ?>"
-                                                class="btn btn-sm btn-warning"><i class="fas fa-edit"></i></a>
-                                            <a href="delete_orders.php?kode_pesanan=<?= urlencode($row['kode_pesanan']); ?>"
-                                                class="btn btn-sm btn-danger"
-                                                onclick="return confirm('Apakah Anda yakin ingin menghapus pesanan ini?')"><i
-                                                    class="fas fa-trash-alt"></i></a>
-                                        </td>
+                                        <td colspan="8" class="text-center">Belum ada data pesanan</td>
                                     </tr>
-                                <?php endforeach; endif; ?>
-                        </tbody>
-                    </table>
+                                <?php else:
+                                    foreach ($recent_orders as $row): ?>
+                                        <tr>
+                                            <td><?= htmlspecialchars($row['kode_pesanan']); ?></td>
+                                            <td><?= htmlspecialchars($row['nama_pelanggan'] ?? '-'); ?></td>
+                                            <td><?= htmlspecialchars($row['jumlah'] ?? '-'); ?></td>
+                                            <td>Rp <?= number_format($row['total_harga'] ?? 0, 0, ',', '.'); ?></td>
+                                            <td><?= date('d/m/Y', strtotime($row['tgl_pesanan'])); ?></td>
+                                            <td><?= date('H:i', strtotime($row['tgl_pesanan'])); ?></td>
+                                            <td><?= htmlspecialchars($row['status_pesanan'] ?? '-'); ?></td>
+                                            <td>
+                                                <!-- untuk mengatur editing dan hapusnya -->
+                                                <a href="edit_orders.php?kode_pesanan=<?= urlencode($row['kode_pesanan']); ?>"
+                                                    class="btn btn-sm btn-warning">
+                                                    <i class="bi bi-pencil-square"></i> Edit
+                                                </a>
+                                                <a href="delete_orders.php?kode_pesanan=<?= urlencode($row['kode_pesanan']); ?>"
+                                                    class="btn btn-sm btn-danger"
+                                                    onclick="return confirm('Apakah Anda yakin ingin menghapus pesanan ini?');">
+                                                    <i class="bi bi-trash"></i> Hapus
+                                                </a>
+
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-            </div>
-            <!-- /TABEL PESANAN TERBARU -->
+                <!-- /TABEL PESANAN TERBARU -->
             </main>
         </div>
     </div>

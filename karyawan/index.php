@@ -363,7 +363,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </form>
             
             <div class="btn-kembali-wrapper">
-                <a href="../iklan.php" class="btn btn-outline-light">
+                <a href="../index.php" class="btn btn-outline-light">
                     <i class="fas fa-arrow-left"></i> Kembali ke Beranda
                 </a>
             </div>

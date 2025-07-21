@@ -186,34 +186,9 @@ class Menu {
             if (!$stmt->execute()) {
                 $this->conn->rollBack();
                 return false;
-            }
+            
 
-            // =========================================================
-            // Bagian untuk mencatat history stok saat update (jika stok berubah)
-            // =========================================================
-            if ($stokLama !== $stok) { // Hanya catat history jika stok benar-benar berubah
-                $queryHistory = "INSERT INTO " . $this->history_table_name . " 
-                    (kode_menu, stok_lama, stok_baru, tgl_update, keterangan)
-                    VALUES (:kode_menu, :stok_lama, :stok_baru, NOW(), :keterangan)";
-                
-                $stmtHistory = $this->conn->prepare($queryHistory);
-
-                $keterangan = "Update stok";
-                if ($stok > $stokLama) {
-                    $keterangan = "Penambahan stok";
-                } elseif ($stok < $stokLama) {
-                    $keterangan = "Pengurangan stok";
-                }
-
-                $stmtHistory->bindParam(':kode_menu', $this->kode_menu);
-                $stmtHistory->bindParam(':stok_lama', $stokLama, PDO::PARAM_INT);
-                $stmtHistory->bindParam(':stok_baru', $stok, PDO::PARAM_INT);
-                $stmtHistory->bindParam(':keterangan', $keterangan);
-
-                if (!$stmtHistory->execute()) {
-                    $this->conn->rollBack();
-                    return false;
-                }
+        
             }
 
             $this->conn->commit();

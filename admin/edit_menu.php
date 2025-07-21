@@ -50,64 +50,59 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $menu->stok = $stok_baru;
 
     // Update menu
-    if ($menu->update()) {
+   // Setelah update menu
+if ($menu->update()) {
+    // Ambil stok lama dan baru untuk membandingkan
+    if ($stok_baru !== $stok_lama) {
+        date_default_timezone_set('Asia/Makassar');
+        $now = date('Y-m-d H:i:s');
 
-        // Cek apakah stok berubah, untuk simpan history stok
-        if ($stok_baru !== $stok_lama) {
-            date_default_timezone_set('Asia/Makassar');
-            $now = date('Y-m-d H:i:s');
-
-            // Definisikan hari dan bulan
-            $days = [
-                'Sunday' => 'Minggu',
-                'Monday' => 'Senin',
-                'Tuesday' => 'Selasa',
-                'Wednesday' => 'Rabu',
-                'Thursday' => 'Kamis',
-                'Friday' => 'Jumat',
-                'Saturday' => 'Sabtu'
-            ];
-            $months = [
-                'January' => 'Januari',
-                'February' => 'Februari',
-                'March' => 'Maret',
-                'April' => 'April',
-                'May' => 'Mei',
-                'June' => 'Juni',
-                'July' => 'Juli',
-                'August' => 'Agustus',
-                'September' => 'September',
-                'October' => 'Oktober',
-                'November' => 'November',
-                'December' => 'Desember'
-            ];
-
-            $day = $days[date('l', strtotime($now))] ?? date('l', strtotime($now));
-            $month = $months[date('F', strtotime($now))] ?? date('F', strtotime($now));
-            $keterangan = "Update stok pada hari $day, bulan $month";
-
-            $queryLog = "INSERT INTO stok_history (kode_menu, stok_lama, stok_baru, tgl_update, keterangan)
-                         VALUES (:kode_menu, :stok_lama, :stok_baru, :tgl_update, :keterangan)";
-            $stmtLog = $db->prepare($queryLog);
-            $stmtLog->bindParam(':kode_menu', $kode_menu);
-            $stmtLog->bindParam(':stok_lama', $stok_lama, PDO::PARAM_INT);
-            $stmtLog->bindParam(':stok_baru', $stok_baru, PDO::PARAM_INT);
-            $stmtLog->bindParam(':tgl_update', $now);
-            $stmtLog->bindParam(':keterangan', $keterangan);
-            $stmtLog->execute();
+        // Keterangan yang lebih dinamis, bisa Anda ubah formatnya seperti di bawah
+        if ($stok_baru > $stok_lama) {
+            $keterangan = "Penambahan stok";
+        } else if ($stok_baru < $stok_lama) {
+            $keterangan = "Pengurangan stok";
+        } else {
+            $keterangan = "Tidak ada perubahan stok";
         }
 
-        $message = "Menu berhasil diperbarui!";
+        // Jika Anda ingin tetap menuliskan hari/bulan, silakan masukkan di keterangan ini:
+        $days = [
+            'Sunday' => 'Minggu','Monday' => 'Senin','Tuesday' => 'Selasa','Wednesday' => 'Rabu','Thursday' => 'Kamis',
+            'Friday' => 'Jumat','Saturday' => 'Sabtu'
+        ];
+        $months = [
+            'January' => 'Januari','February' => 'Februari','March' => 'Maret','April' => 'April','May' => 'Mei',
+            'June' => 'Juni','July' => 'Juli','August' => 'Agustus','September' => 'September','October' => 'Oktober',
+            'November' => 'November','December' => 'Desember'
+        ];
 
-        // Refresh data menu untuk tampilkan data terbaru
-        $data_menu = $menu->getByKode($kode_menu);
+        $day = $days[date('l', strtotime($now))] ?? date('l', strtotime($now));
+        $month = $months[date('F', strtotime($now))] ?? date('F', strtotime($now));
 
-    } else {
-        $message = "Gagal memperbarui menu!";
+        // Gabungkan jika ingin
+        $keterangan .= " (Update stok pada $day, bulan $month)";
+
+        $queryLog = "INSERT INTO stok_history 
+            (kode_menu, stok_lama, stok_baru, tgl_update, keterangan)
+            VALUES (:kode_menu, :stok_lama, :stok_baru, :tgl_update, :keterangan)";
+        $stmtLog = $db->prepare($queryLog);
+        $stmtLog->bindParam(':kode_menu', $kode_menu);
+        $stmtLog->bindParam(':stok_lama', $stok_lama, PDO::PARAM_INT);
+        $stmtLog->bindParam(':stok_baru', $stok_baru, PDO::PARAM_INT);
+        $stmtLog->bindParam(':tgl_update', $now);
+        $stmtLog->bindParam(':keterangan', $keterangan);
+        $stmtLog->execute();
     }
+
+    $message = "Menu berhasil diperbarui!";
+    // Refresh data menu untuk tampilkan data terbaru
+    $data_menu = $menu->getByKode($kode_menu);
+
+} else {
+    $message = "Gagal memperbarui menu!";
 }
-
-
+}
 
 ?>
 <!DOCTYPE html>
