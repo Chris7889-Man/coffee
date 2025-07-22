@@ -3,7 +3,11 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
+<<<<<<< HEAD
 -- Generation Time: Jul 19, 2025 at 11:57 AM
+=======
+-- Generation Time: Jul 19, 2025 at 12:17 AM
+>>>>>>> a77cf92123c2de67e19ff1c20f81f099be711505
 -- Server version: 8.0.30
 -- PHP Version: 8.1.10
 
@@ -71,7 +75,11 @@ INSERT INTO `menu` (`kode_menu`, `nama_menu`, `kategori`, `harga`, `status`, `cr
 ('KM003', 'coffe lathe', 'Coffe', 10000, 'available', '2025-07-14 08:20:29', 10),
 ('KM004', 'cokolate ', 'Non Coffe', 12000, 'available', '2025-07-17 20:28:02', 10),
 ('KM005', 'grean tea', 'Non Coffe', 13000, 'available', '2025-07-17 20:28:44', 10),
+<<<<<<< HEAD
 ('KM006', 'Toramoka', 'Coffe', 12000, 'available', '2025-07-17 21:31:24', 11);
+=======
+('KM006', 'Toramoka', 'Coffe', 12000, 'available', '2025-07-17 21:31:24', 10);
+>>>>>>> a77cf92123c2de67e19ff1c20f81f099be711505
 
 -- --------------------------------------------------------
 
@@ -89,6 +97,16 @@ CREATE TABLE `pesanan` (
   `status_pesanan` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+<<<<<<< HEAD
+=======
+--
+-- Dumping data for table `pesanan`
+--
+
+INSERT INTO `pesanan` (`kode_pesanan`, `nama_pelanggan`, `kode_menu`, `total_harga`, `tgl_pesanan`, `jumlah`, `status_pesanan`) VALUES
+('PSN001', 'dwi', 'KM006', '12000.00', '2025-07-18 00:00:00', 1, 'ready');
+
+>>>>>>> a77cf92123c2de67e19ff1c20f81f099be711505
 -- --------------------------------------------------------
 
 --
