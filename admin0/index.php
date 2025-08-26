@@ -37,6 +37,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['admin_nama'] = $user['nama_admin'];
                 $_SESSION['admin_email'] = $user['email'];
                 $_SESSION['is_super_admin'] = $user['is_super_admin']; // pasti 0 untuk admin biasa
+                $_SESSION['admin_foto'] = $user['foto']; // tambahkan ini jika ada kolom foto
+
 
                 header("Location: dashboard.php");
                 exit();
@@ -211,16 +213,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <form action="" method="POST" novalidate autocomplete="off">
                 <div class="mb-4">
                     <label for="username" class="form-label">Username</label>
-                    <input name="username" id="username" class="form-control" placeholder="Masukkan username" required autofocus />
+                    <input name="username" id="username" autocomplete="new-password" class="form-control" placeholder="Masukkan username" required autofocus />
                 </div>
                 <div class="mb-4">
                     <label for="password" class="form-label">Password</label>
-                    <input type="password" name="password" id="password" class="form-control" placeholder="Masukkan password" required />
+                    <input type="password" name="password" id="password"  autocomplete="new-password" class="form-control" placeholder="Masukkan password" required />
                 </div>
                 <button type="submit" class="btn btn-primary w-100">Login</button>
             </form>
             <div class="btn-kembali-wrapper">
-                <a href="../iklan.php" class="btn btn-outline-light">
+                <a href="../index.php" class="btn btn-outline-light">
                     <i class="fas fa-arrow-left"></i> Kembali
                 </a>
             </div>

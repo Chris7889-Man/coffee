@@ -2,10 +2,12 @@
 session_start();
 
 // Jika sudah login redirect ke dashboard
-if (isset($_SESSION['admin_logged_in']) && $_SESSION['admin_logged_in'] === true) {
+if (isset($_SESSION['super_admin_logged_in']) && $_SESSION['super_admin_logged_in'] === true) {
     header("Location: dashboard.php");
     exit();
 }
+
+
 
 require_once __DIR__ . '/../config/database.php';
 
@@ -218,12 +220,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <form action="" method="POST" novalidate autocomplete="off">
                 <div class="mb-4">
                     <label for="username" class="form-label">Username</label>
-                    <input name="username" id="username" class="form-control" placeholder="Masukkan username" required
+                    <input name="username" id="username"  autocomplete="new-password" class="form-control" placeholder="Masukkan username" required
                         autofocus />
                 </div>
                 <div class="mb-4">
                     <label for="password" class="form-label">Password</label>
-                    <input type="password" name="password" id="password" class="form-control"
+                    <input type="password" name="password" id="password"  autocomplete="new-password" class="form-control"
                         placeholder="Masukkan password" required />
                 </div>
                 <button type="submit" class="btn btn-primary w-100">
@@ -231,7 +233,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </button>
             </form>
             <div class="btn-kembali-wrapper">
-                <a href="../iklan.php" class="btn btn-outline-light">
+                <a href="../index.php" class="btn btn-outline-light">
                     <i class="fas fa-arrow-left"></i> Kembali
                 </a>
             </div>

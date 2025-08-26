@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Jul 19, 2025 at 11:57 AM
+-- Generation Time: Jul 21, 2025 at 04:34 PM
 -- Server version: 8.0.30
 -- PHP Version: 8.1.10
 
@@ -33,17 +33,18 @@ CREATE TABLE `admin` (
   `nama_admin` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `email` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `is_super_admin` tinyint(1) DEFAULT '0',
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `foto` varchar(300) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data for table `admin`
 --
 
-INSERT INTO `admin` (`username`, `password`, `nama_admin`, `email`, `is_super_admin`, `created_at`) VALUES
-('admin', '$2y$10$24n7U98KT7eCM.ei0bxcyuGvdii9OkLw40sQ3vQLrMNloZ0iPDbb6', 'Super Admin', 'admin@cinema221065.com', 1, '2025-06-25 16:38:16'),
-('fadil', '$2y$10$HUK4qMVVII1dnPHrMjq5OOZQrCGk7sovgjSl1Dlr5/4oW.9/pUuxi', 'fadilcs', 'fadilcs@gmail.com', 0, '2025-07-18 22:46:52'),
-('nona', '$2y$10$PDewoFfMLFruYzHfjK2uWu77VeuDen2YtYf/06wxapRDU9cI6VMs6', 'githa', 'githanonaQ@gmail.com', 0, '2025-07-18 22:54:54');
+INSERT INTO `admin` (`username`, `password`, `nama_admin`, `email`, `is_super_admin`, `created_at`, `foto`) VALUES
+('admin', '$2y$10$24n7U98KT7eCM.ei0bxcyuGvdii9OkLw40sQ3vQLrMNloZ0iPDbb6', 'Super Admin', 'admin@cinema221065.com', 1, '2025-06-25 16:38:16', ''),
+('fadil', '$2y$10$HUK4qMVVII1dnPHrMjq5OOZQrCGk7sovgjSl1Dlr5/4oW.9/pUuxi', 'fadilcs', 'fadilcs@gmail.com', 0, '2025-07-18 22:46:52', 'admin2.jpg'),
+('nona', '$2y$10$PDewoFfMLFruYzHfjK2uWu77VeuDen2YtYf/06wxapRDU9cI6VMs6', 'githa', 'githanonaQ@gmail.com', 0, '2025-07-18 22:54:54', 'admin1.jpg');
 
 -- --------------------------------------------------------
 
@@ -56,7 +57,7 @@ CREATE TABLE `menu` (
   `nama_menu` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `kategori` enum('Coffe','Non Coffe') CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `harga` int NOT NULL,
-  `status` enum('available','unavailable','discontinued') CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT 'available',
+  `status` enum('Tersedia','Tidak Tersedia') NOT NULL DEFAULT 'Tersedia',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `stok` int NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -66,12 +67,8 @@ CREATE TABLE `menu` (
 --
 
 INSERT INTO `menu` (`kode_menu`, `nama_menu`, `kategori`, `harga`, `status`, `created_at`, `stok`) VALUES
-('KM001', 'vanila', 'Non Coffe', 12000, 'available', '2025-07-14 08:17:49', 10),
-('KM002', 'gula aren', 'Non Coffe', 15000, 'available', '2025-07-14 08:19:51', 10),
-('KM003', 'coffe lathe', 'Coffe', 10000, 'available', '2025-07-14 08:20:29', 10),
-('KM004', 'cokolate ', 'Non Coffe', 12000, 'available', '2025-07-17 20:28:02', 10),
-('KM005', 'grean tea', 'Non Coffe', 13000, 'available', '2025-07-17 20:28:44', 10),
-('KM006', 'Toramoka', 'Coffe', 12000, 'available', '2025-07-17 21:31:24', 11);
+('KM001', 'vanila', 'Coffe', 10000, 'Tersedia', '2025-07-21 15:27:00', 1004),
+('KM002', 'vanila', 'Coffe', 12000, 'Tersedia', '2025-07-21 16:10:44', 4);
 
 -- --------------------------------------------------------
 
@@ -89,6 +86,13 @@ CREATE TABLE `pesanan` (
   `status_pesanan` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+--
+-- Dumping data for table `pesanan`
+--
+
+INSERT INTO `pesanan` (`kode_pesanan`, `nama_pelanggan`, `kode_menu`, `total_harga`, `tgl_pesanan`, `jumlah`, `status_pesanan`) VALUES
+('PSN001', 'calu', 'KM002', '12048000.00', '2025-07-22 00:25:51', 1004, 'Menunggu');
+
 -- --------------------------------------------------------
 
 --
@@ -103,6 +107,8 @@ CREATE TABLE `staff` (
   `email` varchar(100) DEFAULT NULL,
   `no_hp` varchar(20) DEFAULT NULL,
   `alamat` text,
+  `kode_gerobak` varchar(50) DEFAULT NULL,
+  `lokasi_jualan` varchar(255) DEFAULT NULL,
   `tanggal_dibuat` timestamp NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
@@ -110,9 +116,10 @@ CREATE TABLE `staff` (
 -- Dumping data for table `staff`
 --
 
-INSERT INTO `staff` (`nama_staff`, `jabatan`, `username`, `password`, `email`, `no_hp`, `alamat`, `tanggal_dibuat`) VALUES
-('calu', 'karyawan dipa', 'calu', '$2y$10$kgysYYRQG3Xa43g.jqYcxelbBAwaFzNDh9sdl1z16BvLiFnBmtI7K', 'efg@gmail.com', '000909909', 'dipa\r\n', '2025-07-14 10:06:46'),
-('Rusdi', 'karyawan unhas', 'rusdi', '$2y$10$NCQH2Q9iTaYp7Vv1y.E2KO38haQoReWViI5OBqH6Xpfhcyne5u0Xy', 'abc@gmail.com', '081917345965', 'antang komplek id', '2025-07-14 10:05:11');
+INSERT INTO `staff` (`nama_staff`, `jabatan`, `username`, `password`, `email`, `no_hp`, `alamat`, `kode_gerobak`, `lokasi_jualan`, `tanggal_dibuat`) VALUES
+('Alya cantik', 'Staff', 'alya', '$2y$10$vxXg959WQS9yCw89oeMts.E6wyIsdoDxm6mXtwQixGSA6oP1E.2DC', 'alya2@gmail.com', '089978655673', 'sudiang', 'GRB 3', 'Jl. Somba Opu', '2025-07-21 15:26:18'),
+('Fadil Gs', 'Staff', 'fadil', '$2y$10$tC/1q2/KY0GmJ.1jM1jkyOqyNPHGrHOmewr55zawHd9QUti2ZjTK2', 'fadilcs@gmail.com', '089923236546', 'Monceng loe, belang btp, dekat kampus polikteknik nergeri ujung pandang (PNUP kampus 2) no jl poros, blok F98, warna rumah coklat', 'GRB 1', 'Jl. Veteran', '2025-07-19 16:12:13'),
+('Githa Bunga', 'Staff', 'nona', '$2y$10$SuQA4e9xIXX4LnQKBDyt5.TmM67UOAPsW0bBmkqCwMuAeH3w0iSh2', 'githanonaQ@gmail.com', '089923237536', 'momere Nusa Tengara Timur, kab.sikka, kampu ojang, atas nama githa  ', 'GRB 2', 'Jl. Veteran', '2025-07-19 16:15:33');
 
 -- --------------------------------------------------------
 
@@ -126,8 +133,46 @@ CREATE TABLE `stok_history` (
   `stok_lama` int NOT NULL,
   `stok_baru` int NOT NULL,
   `tgl_update` datetime DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
-  `keterangan` varchar(255) DEFAULT NULL
+  `keterangan` varchar(255) DEFAULT NULL,
+  `harga` decimal(10,0) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `stok_history`
+--
+
+INSERT INTO `stok_history` (`id`, `kode_menu`, `stok_lama`, `stok_baru`, `tgl_update`, `keterangan`, `harga`) VALUES
+(285, 'KM001', 0, 1000, '2025-07-21 23:27:00', 'stok yang baru ditambahkan', NULL),
+(286, 'KM001', 1000, 1001, '2025-07-21 23:27:05', 'Hari  Senin, pada bulan  Juli stok di ubah', NULL),
+(287, 'KM001', 1001, 1002, '2025-07-21 23:27:14', 'Penambahan stok', NULL),
+(288, 'KM001', 1001, 1002, '2025-07-21 23:27:14', 'Update stok pada hari Senin, bulan Juli', NULL),
+(289, 'KM001', 1002, 1003, '2025-07-21 23:30:43', 'Update stok pada hari Senin, bulan Juli', NULL),
+(290, 'KM001', 1003, 1004, '2025-07-21 23:32:12', 'Hari  Senin, pada bulan  Juli stok di ubah', NULL),
+(291, 'KM001', 1004, 1005, '2025-07-21 23:32:23', 'Penambahan stok', NULL),
+(292, 'KM001', 1004, 1005, '2025-07-21 23:32:23', 'Update stok pada hari Senin, bulan Juli', NULL),
+(293, 'KM001', 1005, 1007, '2025-07-21 23:32:45', 'Penambahan stok', NULL),
+(294, 'KM001', 1005, 1007, '2025-07-21 23:32:45', 'Update stok pada hari Senin, bulan Juli', NULL),
+(295, 'KM001', 1007, 1005, '2025-07-21 23:35:50', 'Pengurangan stok', NULL),
+(296, 'KM001', 1007, 1005, '2025-07-21 23:35:50', 'Update stok pada hari Senin, bulan Juli', NULL),
+(297, 'KM001', 1005, 1006, '2025-07-21 23:37:25', 'Penambahan stok', NULL),
+(298, 'KM001', 1005, 1006, '2025-07-21 23:37:25', 'Update stok pada hari Senin, bulan Juli', NULL),
+(299, 'KM001', 1006, 1007, '2025-07-21 23:41:57', 'Penambahan stok', NULL),
+(300, 'KM001', 1006, 1007, '2025-07-21 23:41:57', 'Update stok pada hari Senin, bulan Juli', NULL),
+(301, 'KM001', 1007, 1004, '2025-07-21 23:46:20', 'Pengurangan stok', NULL),
+(302, 'KM001', 1007, 1004, '2025-07-21 23:46:20', 'Update stok pada hari Senin, bulan Juli', NULL),
+(303, 'KM001', 1004, 1003, '2025-07-21 23:48:16', 'Pengurangan stok', NULL),
+(304, 'KM001', 1004, 1003, '2025-07-21 23:48:16', 'Update stok Senin/Juli', NULL),
+(305, 'KM001', 1003, 1004, '2025-07-22 00:08:29', 'Hari  Selasa, pada bulan  Juli stok di ubah', NULL),
+(306, 'KM001', 1004, 1005, '2025-07-22 00:08:40', 'Hari  Selasa, pada bulan  Juli stok di ubah', NULL),
+(307, 'KM001', 1005, 1006, '2025-07-22 00:09:17', 'Penambahan stok', NULL),
+(308, 'KM001', 1006, 1007, '2025-07-22 00:09:30', 'Penambahan stok', NULL),
+(309, 'KM001', 1007, 1005, '2025-07-22 00:09:52', 'Pengurangan stok', NULL),
+(310, 'KM002', 0, 1000, '2025-07-22 00:10:44', 'stok yang baru ditambahkan', NULL),
+(311, 'KM002', 1000, 1001, '2025-07-22 00:11:11', 'Hari  Selasa, pada bulan  Juli stok di ubah', NULL),
+(312, 'KM002', 1001, 1002, '2025-07-22 00:14:12', 'Penambahan stok', NULL),
+(313, 'KM002', 1002, 1003, '2025-07-22 00:18:38', 'Penambahan stok', NULL),
+(314, 'KM002', 1003, 1004, '2025-07-22 00:18:43', 'Penambahan stok', NULL),
+(315, 'KM001', 1005, 1004, '2025-07-22 00:18:45', 'Pengurangan stok', NULL);
 
 --
 -- Indexes for dumped tables
@@ -174,7 +219,7 @@ ALTER TABLE `stok_history`
 -- AUTO_INCREMENT for table `stok_history`
 --
 ALTER TABLE `stok_history`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=159;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=316;
 
 --
 -- Constraints for dumped tables

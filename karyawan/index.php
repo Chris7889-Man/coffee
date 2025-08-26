@@ -330,7 +330,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <span class="input-group-text">
                             <i class="fas fa-user"></i>
                         </span>
-                        <input type="email" id="email" name="email" placeholder="Masukkan email Anda" 
+                        <input type="email" id="email"  autocomplete="new-password" name="email" placeholder="Masukkan email Anda" 
                                class="form-control" required autofocus 
                                value="<?php echo htmlspecialchars($_POST['email'] ?? ''); ?>" />
                     </div>
@@ -344,7 +344,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <span class="input-group-text">
                             <i class="fas fa-key"></i>
                         </span>
-                        <input type="password" id="password" name="password" placeholder="Masukkan password Anda"
+                        <input type="password" id="password"  autocomplete="new-password" name="password" placeholder="Masukkan password Anda"
                                class="form-control" required />
                         <button class="btn btn-outline-secondary" type="button" id="togglePassword">
                             <i class="fas fa-eye"></i>
@@ -363,7 +363,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </form>
             
             <div class="btn-kembali-wrapper">
-                <a href="../iklan.php" class="btn btn-outline-light">
+                <a href="../index.php" class="btn btn-outline-light">
                     <i class="fas fa-arrow-left"></i> Kembali ke Beranda
                 </a>
             </div>

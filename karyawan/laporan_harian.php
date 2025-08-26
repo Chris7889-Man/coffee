@@ -1,13 +1,8 @@
-
-
-
-
-
 <?php
 session_start();
 require_once __DIR__ . '/../config/database.php';
-require_once __DIR__ . '/menu.php';
 
+// Cek login admin
 if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
     header("Location: login.php");
     exit();
@@ -15,64 +10,6 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== tru
 
 $database = new Database();
 $db = $database->getConnection();
-$menu = new Menu($db);
-
-
-
-$message = '';
-
-// Tangani update stok jika ada submit
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['stok_update'])) {
-    date_default_timezone_set('Asia/Makassar');
-    $now = date('Y-m-d H:i:s');
-
-    // DEFINISIKAN day dan month DISINI
-    $days = [
-        'Sunday' => 'Minggu',
-        'Monday' => 'Senin',
-        'Tuesday' => 'Selasa',
-        'Wednesday' => 'Rabu',
-        'Thursday' => 'Kamis',
-        'Friday' => 'Jumat',
-        'Saturday' => 'Sabtu'
-    ];
-    $months = [
-        'January' => 'Januari',
-        'February' => 'Februari',
-        'March' => 'Maret',
-        'April' => 'April',
-        'May' => 'Mei',
-        'June' => 'Juni',
-        'July' => 'Juli',
-        'August' => 'Agustus',
-        'September' => 'September',
-        'October' => 'Oktober',
-        'November' => 'November',
-        'December' => 'Desember'
-    ];
-
-    $day = $days[date('l', strtotime($now))] ?? date('l', strtotime($now));
-    $month = $months[date('F', strtotime($now))] ?? date('F', strtotime($now));
-
-    // Pastikan kode_menu dan stok ada di POST (form per baris)
-    if (isset($_POST['kode_menu']) && isset($_POST['stok'])) {
-        $kode_menu = $_POST['kode_menu'];
-        $stok_baru = (int) $_POST['stok'];
-
-        // Ambil stok lama dulu
-        $queryGet = "SELECT stok FROM menu WHERE kode_menu = :kode_menu";
-        $stmtGet = $db->prepare($queryGet);
-        $stmtGet->bindParam(':kode_menu', $kode_menu);
-        $stmtGet->execute();
-        $dataMenu = $stmtGet->fetch(PDO::FETCH_ASSOC);
-        $stok_lama = $dataMenu['stok'] ?? 0;
-
-        
-    }
-}
-
-// Ambil semua data menu
-$stmt = $menu->read();
 
 date_default_timezone_set('Asia/Makassar');
 
@@ -342,7 +279,7 @@ function getIndonesianDate($date)
         2 => 'Februari',
         3 => 'Maret',
         4 => 'April',
-        5 => 'Mei',
+        5 => 'Mei', 
         6 => 'Juni',
         7 => 'Juli',
         8 => 'Agustus',
@@ -369,7 +306,6 @@ foreach ($laporan_data['menu_terlaris'] as $menu) {
 }
 
 ?>
-
 <!DOCTYPE html>
 <html lang="id">
 
@@ -474,20 +410,21 @@ foreach ($laporan_data['menu_terlaris'] as $menu) {
     </style>
 </head>
 
+
 <body>
     <div class="container py-4">
 
         <!-- Header -->
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
-                <h1 class="h3"><i class="bi bi-bar-chart-line-fill text-primary"></i> Laporan Penjualan</h1>
+                <h1 class="h3"><i class="bi bi-bar-chart-line-fill text-primary"> </i> Laporan Penjualan</h1>
                 <small class="text-muted">Coffee Shop Management System</small>
             </div>
             <div class="no-print">
                 <button class="btn btn-outline-primary" onclick="window.print()">
                     <i class="bi bi-printer"></i> Cetak Laporan
                 </button>
-                <a href="dashboard.php" class="btn btn-outline-secondary ms-2">
+                <a href="dashboard.php" class="btn btn-warning" >
                     <i class="bi bi-arrow-left"></i> Kembali
                 </a>
             </div>
@@ -543,63 +480,6 @@ foreach ($laporan_data['menu_terlaris'] as $menu) {
             </div>
         </div>
 
-<!-- tampilan untuk kelola menu stok -->
-<head>
-    <meta charset="UTF-8">
-    <title>Kelola Menu - Coffee Shop Admin</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-</head>
-
-<body>
-    <div class="container mt-4">
-        <h2>Kelola Menu</h2>
-
-        <?php if (isset($_SESSION['message'])): ?>
-            <div class="alert alert-info">
-                <?= htmlspecialchars($_SESSION['message']) ?>
-            </div>
-            <?php unset($_SESSION['message']); ?>
-        <?php endif; ?>
-
-
-        <div class="mb-3 d-flex gap-2">
-            <a href="history_stok.php" class="btn btn-info btn-sm">Lihat Histori</a>
-        </div>
-
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th>Kode Menu</th>
-                    <th>Nama Menu</th>
-                    <th>Kategori</th>
-                    <th>Harga</th>
-                    <th>Stok</th> <!-- Editable stok dengan form per baris -->
-                    <th>Status</th>
-                   
-                </tr>
-            </thead>
-            <tbody>
-                <?php while ($row = $stmt->fetch(PDO::FETCH_ASSOC)): ?>
-                    <tr>
-                        <td><?= htmlspecialchars($row['kode_menu']); ?></td>
-                        <td><?= htmlspecialchars($row['nama_menu']); ?></td>
-                        <td><?= htmlspecialchars($row['kategori']); ?></td>
-                        <td>Rp <?= number_format($row['harga'], 0, ',', '.'); ?></td>
-                        <td>
-                            <form method="POST" action="" class="d-flex align-items-center gap-2">
-                                <input type="hidden" name="stok_update" value="1" />    
-                                <input type="hidden" name="kode_menu" value="<?= htmlspecialchars($row['kode_menu']); ?>" />
-                                <input type="number" name="stok" value="<?= (int) $row['stok'] ?>" min="0">                           
-                            </form>
-                        </td>
-                        <td><?= htmlspecialchars($row['status']); ?></td>
-                    </tr>
-                <?php endwhile; ?>
-            </tbody>
-        </table>
-    </div>
-
         <!-- Periode Info -->
         <div class="card mb-4">
             <div class="card-body">
@@ -626,60 +506,6 @@ foreach ($laporan_data['menu_terlaris'] as $menu) {
         </div>
 
         <?php if ($laporan_data['summary'] && ($laporan_data['summary']['jumlah_pesanan'] ?? 0) > 0): ?>
-
-            <!-- Tabel manage order ditambahkan di sini -->
-            <div class="card mb-4">
-                <div class="card-header bg-primary text-white">
-                    <i class="bi bi-table"></i> Tabel Pesanan
-                    <div class="mb-3 d-flex gap-2">              
-        </div>
-                </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-striped mb-0">
-                            <thead>
-                                <tr>
-                                    <th>Kode Pesanan</th>
-                                    <th>Nama Pelanggan</th>
-                                    <th>Jumlah Pesanan</th>
-                                    <th>Total Harga</th>
-                                    <th>Tanggal</th>
-                                    <th>Jam</th>
-                                    <th>Status</th>
-                                    <th>Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php
-                                // Query untuk ambil seluruh pesanan tanpa filter status dan tanggal agar sesuai manage_order.php
-                                $stmt_all_pesanan = $db->query("SELECT * FROM pesanan ORDER BY tgl_pesanan DESC");
-                                while ($row = $stmt_all_pesanan->fetch(PDO::FETCH_ASSOC)):
-                                ?>
-                                <tr>
-                                    <td><?= htmlspecialchars($row['kode_pesanan']); ?></td>
-                                    <td><?= htmlspecialchars($row['nama_pelanggan'] ?? ''); ?></td>
-                                    <td><?= htmlspecialchars($row['jumlah'] ?? ''); ?></td>
-                                    <td>Rp <?= number_format($row['total_harga'], 0, ',', '.'); ?></td>
-                                    <td><?= date('d/m/Y', strtotime($row['tgl_pesanan'])); ?></td>
-                                    <td><?= date('H:i', strtotime($row['tgl_pesanan'])); ?></td>
-                                    <td><?= htmlspecialchars($row['status_pesanan'] ?? ''); ?></td>
-                                    <td>
-                                        <a href="edit_orders.php?kode_pesanan=<?= urlencode($row['kode_pesanan']); ?>" class="btn btn-sm btn-warning">
-                                            <i class="bi bi-pencil-square"></i> Edit
-                                        </a>
-                                        <a href="delete_orders.php?kode_pesanan=<?= urlencode($row['kode_pesanan']); ?>" class="btn btn-sm btn-danger" onclick="return confirm('Apakah Anda yakin ingin menghapus pesanan ini?');">
-                                            <i class="bi bi-trash"></i> Hapus
-                                        </a>
-                                    </td>
-                                </tr>
-                                <?php endwhile; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                <a href="detail_pesanan.php" class="btn btn-info btn-sm">Lihat detail</a>
-            </div>
-
             <!-- Status Pesanan Lengkap -->
             <div class="row mb-4">
                 <?php
@@ -733,24 +559,116 @@ foreach ($laporan_data['menu_terlaris'] as $menu) {
                     </div>
                 </div>
             </div>
+         
+
+
+
+            <!-- Detail Table -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <i class="bi bi-table"></i> Detail <?= ucfirst($filter_type) ?>
+                </div>
+                <div class="card-body p-0">
+                    <?php if (!empty($laporan_data['detail'])): ?>
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>No</th>
+                                        <?php if ($filter_type == 'harian'): ?>
+                                            <th>Kode Pesanan</th>
+                                            <th>Nama Pelanggan</th>
+                                            <th>Menu</th>
+                                            <th>Kategori</th>
+                                            <th>Jumlah</th>
+                                            <th>Harga Satuan</th>
+                                            <th>Total</th>
+                                            <th>Waktu</th>
+                                        <?php else: ?>
+                                            <th><?= $filter_type == 'tahunan' ? 'Bulan' : 'Tanggal' ?></th>
+                                            <th>Jumlah Pesanan</th>
+                                            <th>Total Pendapatan</th>
+                                        <?php endif; ?>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($laporan_data['detail'] as $i => $row): ?>
+                                        <tr>
+                                            <td><?= $i + 1 ?></td>
+                                            <?php if ($filter_type == 'harian'): ?>
+                                                <td><?= htmlspecialchars($row['kode_pesanan']) ?></td>
+                                                <td><?= htmlspecialchars($row['nama_pelanggan']) ?></td>
+                                                <td>
+                                                    <strong><?= htmlspecialchars($row['nama_menu'] ?? $row['kode_menu']) ?></strong><br />
+                                                    <small class="text-muted"><?= htmlspecialchars($row['kode_menu']) ?></small>
+                                                </td>
+                                                <td>
+                                                    <span
+                                                        class="badge bg-<?= strtolower($row['kategori']) == 'coffee' ? 'primary' : 'success' ?>">
+                                                        <?= htmlspecialchars($row['kategori'] ?? '-') ?>
+                                                    </span>
+                                                </td>
+                                                <td><?= $row['jumlah'] ?></td>
+                                                <td>Rp <?= number_format($row['harga_satuan'] ?? 0, 0, ',', '.') ?></td>
+                                                <td><strong>Rp <?= number_format($row['total_harga'], 0, ',', '.') ?></strong></td>
+                                                <td><?= date('H:i:s', strtotime($row['tgl_pesanan'])) ?></td>
+                                            <?php else: ?>
+                                                <td>
+                                                    <?php
+                                                    if ($filter_type == 'tahunan') {
+                                                        echo getIndonesianMonth($row['bulan']);
+                                                    } else {
+                                                        echo getIndonesianDate($row['tanggal']);
+                                                    }
+                                                    ?>
+                                                </td>
+                                                <td><?= $row['jumlah_pesanan'] ?></td>
+                                                <td><strong>Rp <?= number_format($row['total_pendapatan'], 0, ',', '.') ?></strong></td>
+                                            <?php endif; ?>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                                <?php if ($filter_type == 'harian'): ?>
+                                    <tfoot class="table-light">
+                                        <tr>
+                                            <td colspan="7" class="text-end"><strong>Total Pendapatan:</strong></td>
+                                            <td><strong class="text-success">Rp
+                                                    <?= number_format($laporan_data['summary']['total_pendapatan'], 0, ',', '.') ?></strong>
+                                            </td>
+                                            <td></td>
+                                        </tr>
+                                    </tfoot>
+                                <?php endif; ?>
+                            </table>
+                        </div>
+                    <?php else: ?>
+                        <div class="p-5 text-center text-muted">
+                            <i class="bi bi-inbox fs-1"></i>
+                            <p class="mt-3">Tidak ada data untuk periode ini.</p>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+            <!-- Chart sederhana dengan doughnut -->
+
 
         <?php else: ?>
             <div class="alert alert-warning text-center">
                 <i class="bi bi-exclamation-triangle"></i> Tidak ada data untuk periode ini.
             </div>
         <?php endif; ?>
-
         <!-- Chart Status Pesanan -->
-        <div class="card status-chart-card">
-            <div class="card-header">
-                Status Pesanan
+            <div class="card status-chart-card">
+                <div class="card-header">
+                    Status Pesanan
+                </div>
+                <div class="card-body">
+                    <canvas id="statusChart" height="150"></canvas>
+                </div>
             </div>
-            <div class="card-body">
-                <canvas id="statusChart" height="150"></canvas>
-            </div>
-        </div>
+
     </div>
-    
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -769,6 +687,15 @@ foreach ($laporan_data['menu_terlaris'] as $menu) {
                 echo (int) $s['jumlah'] . ","; ?>
         ];
 
+        const statusColors = [
+            '#ffc107',   // Menunggu - kuning
+            '#0dcaf0',   // Dikonfirmasi - biru muda
+            '#6f42c1',   // Diproses - ungu
+            '#6c757d',   // Siap - abu
+            '#198754',   // Selesai - hijau
+            '#dc3545'    // Batal - merah
+        ];
+
         // Cocokkan warna dengan label secara sederhana
         const datasetColors = statusLabels.map(label => {
             const map = {
@@ -783,34 +710,59 @@ foreach ($laporan_data['menu_terlaris'] as $menu) {
         });
 
         new Chart(ctxStatus, {
-            type: 'bar', // ubah dari doughnut menjadi bar chart
+            type: 'doughnut',
             data: {
                 labels: statusLabels,
                 datasets: [{
-                    label: 'Jumlah Pesanan',
                     data: statusData,
                     backgroundColor: datasetColors,
                     borderColor: '#fff',
-                    borderWidth: 2
+                    borderWidth: 2,
+                    hoverOffset: 30
                 }]
             },
             options: {
                 plugins: {
-                    legend: { display: false },
+                    legend: { position: 'bottom', labels: { font: { size: 14 } } },
                     tooltip: {
                         callbacks: {
                             label: ctx => {
-                                let label = ctx.dataset.label || '';
-                                let value = ctx.parsed.y || 0;
+                                let label = ctx.label || '';
+                                let value = ctx.parsed || 0;
                                 return label + ': ' + value + ' pesanan';
                             }
                         }
                     }
                 },
+                cutout: '70%'
+            }
+        });
+    </script>
+    <script>
+        // Inisialisasi chart stok
+        const ctxStok = document.getElementById('stokChart').getContext('2d');
+        new Chart(ctxStok, {
+            type: 'bar',
+            data: {
+                labels: <?= json_encode($labels) ?>,
+                datasets: [{
+                    label: 'Total Porsi Terjual',
+                    data: <?= json_encode($data_stok) ?>,
+                    backgroundColor: '#6f42c1',
+                    borderColor: '#5a2e9b',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                    title: { display: true, text: 'Menu Terlaris' }
+                },
                 scales: {
                     y: {
                         beginAtZero: true,
-                        stepSize: 1
+                        ticks: { stepSize: 1 }
                     }
                 }
             }

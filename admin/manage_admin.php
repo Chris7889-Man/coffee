@@ -8,7 +8,6 @@ if (!isset($_SESSION['admin_logged_in']) || $_SESSION['is_super_admin'] != 1) {
     exit();
 }
 
-
 $database = new Database();
 $db = $database->getConnection();
 
@@ -66,7 +65,8 @@ if ($show_add_admin_form && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POS
             $error_msg = "Username atau email sudah terdaftar.";
         } else {
             $password_hash = password_hash($password, PASSWORD_DEFAULT);
-            $stmt_insert = $db->prepare("INSERT INTO admin (username, nama_admin, email, password, is_super_admin) VALUES (:username, :nama_admin, :email, :password, :is_super_admin)");
+            // Tambahkan kolom created_at dan foto saat insert admin baru
+            $stmt_insert = $db->prepare("INSERT INTO admin (username, nama_admin, email, password, is_super_admin, created_at, foto) VALUES (:username, :nama_admin, :email, :password, :is_super_admin, NOW(), NULL)");
             $stmt_insert->bindParam(':username', $username);
             $stmt_insert->bindParam(':nama_admin', $nama_admin);
             $stmt_insert->bindParam(':email', $email);
@@ -84,8 +84,8 @@ if ($show_add_admin_form && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POS
     }
 }
 
-// Ambil data admin saat ini
-$stmt = $db->prepare("SELECT username, nama_admin, email, is_super_admin FROM admin ORDER BY nama_admin ASC");
+// Ambil data admin saat ini dengan created_at dan foto
+$stmt = $db->prepare("SELECT username, nama_admin, email, is_super_admin, created_at, foto FROM admin ORDER BY nama_admin ASC");
 $stmt->execute();
 
 ?>
@@ -123,7 +123,6 @@ $stmt->execute();
             transition: background 0.3s ease;
         }
 
-
         .btn-gradient-primary:hover {
             background: linear-gradient(135deg, #d6336c, #6f42c1);
             color: #fff;
@@ -137,6 +136,13 @@ $stmt->execute();
         .modal-header {
             background: #6f42c1;
             color: #fff;
+        }
+
+        /* Foto thumbnail di tabel */
+        .foto-thumb {
+            max-height: 60px;
+            border-radius: 4px;
+            object-fit: cover;
         }
     </style>
 </head>
@@ -180,19 +186,21 @@ $stmt->execute();
 
             <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table class="table table-bordered table-hover mb-0">
+                    <table class="table table-bordered table-hover mb-0 align-middle text-center">
                         <thead>
                             <tr>
                                 <th>Username</th>
                                 <th>Nama Admin</th>
                                 <th>Email</th>
                                 <th>Super Admin</th>
+                                <th>Waktu Terdaftar</th>
+                              
                             </tr>
                         </thead>
                         <tbody>
                             <?php if ($stmt->rowCount() === 0): ?>
                                 <tr>
-                                    <td colspan="4" class="text-center text-muted py-3">Belum ada admin terdaftar.</td>
+                                    <td colspan="6" class="text-center text-muted py-3">Belum ada admin terdaftar.</td>
                                 </tr>
                             <?php else: ?>
                                 <?php while ($row = $stmt->fetch(PDO::FETCH_ASSOC)): ?>
@@ -200,13 +208,19 @@ $stmt->execute();
                                         <td><?= htmlspecialchars($row['username']) ?></td>
                                         <td><?= htmlspecialchars($row['nama_admin']) ?></td>
                                         <td><a href="mailto:<?= htmlspecialchars($row['email']) ?>" class="text-decoration-none"><?= htmlspecialchars($row['email']) ?></a></td>
-                                        <td class="text-center">
+                                        <td>
                                             <?php if ($row['is_super_admin']): ?>
                                                 <span class="badge bg-success">Ya</span>
                                             <?php else: ?>
                                                 <span class="badge bg-secondary">Tidak</span>
                                             <?php endif; ?>
                                         </td>
+                                        <td>
+    <?= date('Y-m-d', strtotime($row['created_at'])) ?><br>
+    <small><?= date('H:i:s', strtotime($row['created_at'])) ?></small>
+
+
+
                                     </tr>
                                 <?php endwhile; ?>
                             <?php endif; ?>
@@ -223,7 +237,7 @@ $stmt->execute();
                     <i class="fas fa-user-plus"></i> Tambah Admin Baru
                 </div>
                 <div class="card-body">
-                    <form method="POST" novalidate>
+                    <form method="POST" novalidate enctype="multipart/form-data">
                         <input type="hidden" name="add_admin" value="1" />
                         <div class="row g-3">
                             <div class="col-md-6">
@@ -256,6 +270,10 @@ $stmt->execute();
                                         <?= isset($_POST['is_super_admin']) ? 'checked' : '' ?> />
                                     <label for="is_super_admin" class="form-check-label fw-semibold">Super Admin</label>
                                 </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="foto" class="form-label">Foto Admin</label>
+                                <input type="file" name="foto" id="foto" class="form-control" accept="image/*" />
                             </div>
                             <div class="col-12 text-end">
                                 <button type="submit" class="btn btn-gradient-primary">
@@ -300,7 +318,9 @@ $stmt->execute();
     </div>
     <?php endif; ?>
 
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 
 </html>

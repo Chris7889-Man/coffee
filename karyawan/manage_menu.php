@@ -15,80 +15,44 @@ $menu = new Menu($db);
 
 $message = '';
 
-// Tangani update stok jika ada submit
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['stok_update'])) {
-    date_default_timezone_set('Asia/Makassar');
-    $now = date('Y-m-d H:i:s');
+    // Ambil data dari form
+    $kode_menu = $_POST['kode_menu'] ?? '';
+    $stok_baru = isset($_POST['stok']) ? (int)$_POST['stok'] : 0;
 
-    // DEFINISIKAN day dan month DISINI
-    $days = [
-        'Sunday' => 'Minggu',
-        'Monday' => 'Senin',
-        'Tuesday' => 'Selasa',
-        'Wednesday' => 'Rabu',
-        'Thursday' => 'Kamis',
-        'Friday' => 'Jumat',
-        'Saturday' => 'Sabtu'
-    ];
-    $months = [
-        'January' => 'Januari',
-        'February' => 'Februari',
-        'March' => 'Maret',
-        'April' => 'April',
-        'May' => 'Mei',
-        'June' => 'Juni',
-        'July' => 'Juli',
-        'August' => 'Agustus',
-        'September' => 'September',
-        'October' => 'Oktober',
-        'November' => 'November',
-        'December' => 'Desember'
-    ];
+    if (!$kode_menu) {
+        $message = "Kode menu tidak valid.";
+    } else {
+        // Ambil stok lama saat ini
+        $dataMenu = $menu->getByKode($kode_menu);
+        $stok_lama = $dataMenu ? (int)$dataMenu['stok'] : 0;
 
-    $day = $days[date('l', strtotime($now))] ?? date('l', strtotime($now));
-    $month = $months[date('F', strtotime($now))] ?? date('F', strtotime($now));
+        // Set properti menu
+        $menu->kode_menu = $kode_menu;
+        $menu->stok = $stok_baru;
+        // Agar update stok penuh dilakukan, isi properti lain dg data lama supaya update tidak overwrite nilai lain
+        $menu->nama_menu = $dataMenu['nama_menu'] ?? '';
+        $menu->kategori = $dataMenu['kategori'] ?? '';
+        $menu->harga = $dataMenu['harga'] ?? 0;
+        $menu->status = $dataMenu['status'] ?? 'Tersedia';
+        $menu->gambar = $dataMenu['gambar'] ?? '';
 
-    // Pastikan kode_menu dan stok ada di POST (form per baris)
-    if (isset($_POST['kode_menu']) && isset($_POST['stok'])) {
-        $kode_menu = $_POST['kode_menu'];
-        $stok_baru = (int) $_POST['stok'];
+        
 
-        // Ambil stok lama dulu
-        $queryGet = "SELECT stok FROM menu WHERE kode_menu = :kode_menu";
-        $stmtGet = $db->prepare($queryGet);
-        $stmtGet->bindParam(':kode_menu', $kode_menu);
-        $stmtGet->execute();
-        $dataMenu = $stmtGet->fetch(PDO::FETCH_ASSOC);
-        $stok_lama = $dataMenu['stok'] ?? 0;
-
-        if ($stok_baru !== $stok_lama) {
-            // Simpan history stok hanya jika stok berubah
-            $keterangan = "Hari  $day, pada bulan  $month stok di ubah";
-            $queryLog = "INSERT INTO stok_history (kode_menu, stok_lama, stok_baru, tgl_update, keterangan) 
-                        VALUES (:kode_menu, :stok_lama, :stok_baru, :tgl_update, :keterangan)";
-            $stmtLog = $db->prepare($queryLog);
-            $stmtLog->bindParam(':kode_menu', $kode_menu);
-            $stmtLog->bindParam(':stok_lama', $stok_lama, PDO::PARAM_INT);
-            $stmtLog->bindParam(':stok_baru', $stok_baru, PDO::PARAM_INT);
-            $stmtLog->bindParam(':tgl_update', $now);
-            $stmtLog->bindParam(':keterangan', $keterangan);
-            $stmtLog->execute();
-
-            // Update stok menu
-            $queryUpdate = "UPDATE menu SET stok = :stok WHERE kode_menu = :kode_menu";
-            $stmtUpdate = $db->prepare($queryUpdate);
-            $stmtUpdate->bindParam(':stok', $stok_baru, PDO::PARAM_INT);
-            $stmtUpdate->bindParam(':kode_menu', $kode_menu);
-            $stmtUpdate->execute();
-
-            $message = "Stok berhasil diperbarui untuk kode menu $kode_menu.";
-        } else {
+        if ($stok_baru === $stok_lama) {
             $message = "Stok tidak berubah untuk kode menu $kode_menu.";
+        } else {
+            // Panggil update yang sudah otomatis update stok sekaligus simpan history stok
+            if ($menu->update()) {
+                $message = "Stok berhasil diperbarui untuk kode menu $kode_menu.";
+            } else {
+                $message = "Gagal memperbarui stok untuk kode menu $kode_menu.";
+            }
         }
     }
 }
 
-// Ambil semua data menu
+// Ambil seluruh data menu
 $stmt = $menu->read();
 
 ?>
@@ -107,25 +71,21 @@ $stmt = $menu->read();
     <div class="container mt-4">
         <h2>Kelola Menu</h2>
 
-        <?php if (isset($_SESSION['message'])): ?>
-            <div class="alert alert-info">
-                <?= htmlspecialchars($_SESSION['message']) ?>
-            </div>
-            <?php unset($_SESSION['message']); ?>
+        <?php if ($message): ?>
+            <div class="alert alert-info"><?= htmlspecialchars($message) ?></div>
         <?php endif; ?>
 
-
         <div class="mb-3 d-flex gap-2">
+              <a href="dashboard.php" class="btn btn-warning">
+                <i class="bi bi-arrow-left"></i> Kembali
+            </a>
             <a href="tambah_menu.php" class="btn btn-primary">
                 <i class="bi bi-plus-circle"></i> Tambah Menu
             </a>
-            <a href="dashboard.php" class="btn btn-warning">
-                Kembali
-            </a>
+          
             <a href="history_stok.php" class="btn btn-info btn-sm">Lihat Histori</a>
+            <a href="view_menu.php" class="btn btn-info btn-sm">Menu Staff</a>
         </div>
-
-        lombok
 
         <table class="table table-bordered">
             <thead>
@@ -176,4 +136,4 @@ $stmt = $menu->read();
     </div>
 </body>
 
-</html> 
+</html>

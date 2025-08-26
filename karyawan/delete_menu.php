@@ -33,6 +33,4 @@ if ($menu->delete_menu($kode_menu)) {
 // Redirect kembali ke halaman utama
 header("Location: manage_menu.php");
 exit();
-
-
 ?>
