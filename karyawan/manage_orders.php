@@ -5,7 +5,7 @@ date_default_timezone_set('Asia/Makassar'); // Set timezone ke WIT
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../classes/pesanan.php';
 
-if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
+if (!isset($_SESSION['staff_logged_in']) || $_SESSION['staff_logged_in'] !== true) {
     header("Location: login.php");
     exit();
 }
@@ -29,7 +29,7 @@ $stmt = $pesanan->read();
     <div class="container mt-4">
         <h2>Kelola Pesanan</h2>
         <div class="mb-3 d-flex gap-2">
-             <a href="dashboard.php" class="btn btn-warning"><i class="bi bi-arrow-left"></i>  Kembali</a>
+             <a href="view_menu.php" class="btn btn-warning"><i class="bi bi-arrow-left"></i>  Kembali</a>
             <!-- <a href="story_pesanan.php" class="btn btn-info btn-sm">Lihat Histori</a> -->
             <a href="tambah_orders.php" class="btn btn-primary">
                 <i class="bi bi-plus-circle"></i> Tambah Orders
@@ -41,13 +41,11 @@ $stmt = $pesanan->read();
                 <tr>
                     <th>Kode Pesanan</th>
                     <th>Nama Pelanggan</th>
-                   <!-- Kolom menu -->
                     <th>Jumlah Pesanan</th>
                     <th>Total Harga</th>
-                    <th>Tanggal</th>     <!-- Pisah tanggal -->
-                    <th>Jam</th>         <!-- Pisah jam -->
+                    <th>Tanggal</th>     
+                    <th>Jam</th>         
                     <th>Status</th>
-                    <th>Aksi</th>
                 </tr>
             </thead>
             <tbody>
@@ -61,11 +59,6 @@ $stmt = $pesanan->read();
                     <td><?= date('d/m/Y', strtotime($row['tgl_pesanan'])); ?></td>
                     <td><?= date('H:i', strtotime($row['tgl_pesanan'])); ?></td>
                     <td><?= htmlspecialchars($row['status_pesanan'] ?? ''); ?></td>
-                    <td><a href="edit_orders.php?kode_pesanan=<?= urlencode($row['kode_pesanan']); ?>" class="btn btn-sm btn-warning">
-                            <i class="bi bi-pencil-square"></i> Edit</a>
-                        <a href="delete_orders.php?kode_pesanan=<?= urlencode($row['kode_pesanan']); ?>" class="btn btn-sm btn-danger" onclick="return confirm('Apakah Anda yakin ingin menghapus pesanan ini?');">
-                            <i class="bi bi-trash"></i> Hapus</a>
-                    </td>
                 </tr>
                 <?php endwhile; ?>
             </tbody>

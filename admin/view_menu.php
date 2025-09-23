@@ -402,6 +402,9 @@ $total_items = count($filtered_items);
             </form>
         </section>
 
+
+        <!-- bagian card menunya -->
+
         <section class="mb-4 bg-light bg-opacity-10 p-3 rounded">
             <strong>Menampilkan <?= $total_items; ?> item menu
                 <?= ($search || $selected_category) ? "untuk pencarian '" . htmlspecialchars($search) . "' dan kategori '" . htmlspecialchars(ucfirst($selected_category)) . "'" : '' ?></strong>
@@ -447,9 +450,6 @@ $total_items = count($filtered_items);
                             </div>
                             <div class="card-body">
                                 <h5 class="card-title"><?= $nama_menu ?></h5>
-                                <?php if ($deskripsi): ?>
-                                    <p class="description"><?= $deskripsi ?></p>
-                                <?php endif; ?>
                                 <div class="card-footer-custom">
                                     <span class="price-tag">Rp <?= number_format($harga, 0, ',', '.') ?></span>
                                     <span class="badge bg-<?= $stok > 5 ? 'success' : ($stok > 0 ? 'warning' : 'danger'); ?>">

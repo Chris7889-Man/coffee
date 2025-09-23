@@ -23,3 +23,4 @@ if ($stmt->execute()) {
 } else {
     echo "Gagal menghapus data staff. Error: " . implode(" ", $stmt->errorInfo()); // Tampilkan error PDO jika ada
 }
+

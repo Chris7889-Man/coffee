@@ -26,8 +26,8 @@ $endOfWeek = date('Y-m-d', strtotime('sunday this week'));
 function getTotalPendapatan($db, $startDate, $endDate)
 {
     $query = "SELECT SUM(total_harga) as total FROM pesanan 
-              WHERE status_pesanan = 'Selesai' 
-              AND DATE(tgl_pesanan) BETWEEN :start_date AND :end_date";
+            WHERE status_pesanan = 'Selesai' 
+            AND DATE(tgl_pesanan) BETWEEN :start_date AND :end_date";
     $stmt = $db->prepare($query);
     $stmt->bindParam(':start_date', $startDate);
     $stmt->bindParam(':end_date', $endDate);

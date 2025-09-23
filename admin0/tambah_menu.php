@@ -36,6 +36,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $menu->harga = $_POST['harga'] ?? 0;
     $menu->status = $_POST['status'] ?? 'Tersedia';
     $menu->stok = isset($_POST['stok']) ? (int) $_POST['stok'] : 0;
+    $menu->deskripsi = $_POST['deskripsi'] ?? '';
+
 
     // Tangani upload gambar
     if (isset($_FILES['gambar']) && $_FILES['gambar']['error'] === UPLOAD_ERR_OK) {
@@ -51,12 +53,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (in_array($fileExtension, $allowedfileExtensions)) {
             // Buat nama file unik untuk menghindari overwrite file lain
-            $newFileName = $menu->kode_menu . '_' . uniqid() . '.' . $fileExtension;
+            $newFileName = basename($_FILES['gambar']['name']);
+
 
             $uploadFileDir = __DIR__ . '/../assets/';
             $dest_path = $uploadFileDir . $newFileName;
 
-            if(move_uploaded_file($fileTmpPath, $dest_path)) {
+            if (move_uploaded_file($fileTmpPath, $dest_path)) {
                 $menu->gambar = $newFileName;
             } else {
                 $message = "Terjadi kesalahan saat mengupload gambar.";
@@ -100,7 +103,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
         <form method="POST" novalidate enctype="multipart/form-data">
-                <!-- ... field lain seperti kode_menu, nama_menu, kategori, harga, stok, status ... -->
+            <!-- ... field lain seperti kode_menu, nama_menu, kategori, harga, stok, status ... -->
 
             <div class="mb-3">
                 <label for="kode_menu" class="form-label">Kode Menu</label>
@@ -113,13 +116,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <label for="nama_menu" class="form-label">Nama Menu</label>
                 <input type="text" class="form-control" id="nama_menu" name="nama_menu" required>
             </div>
-        
-                <div class="mb-3">
-                    <label for="gambar" class="form-label">Gambar Menu</label>
-                    <input type="file" class="form-control" id="gambar" name="gambar" accept="image/*">
-                </div>
 
-                
+            <div class="mb-3">
+                <label for="gambar" class="form-label">Gambar Menu</label>
+                <input type="file" class="form-control" id="gambar" name="gambar" accept="image/*">
+            </div>
+
+
 
 
 
@@ -145,6 +148,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <label for="stok" class="form-label">Stok</label>
                 <input type="number" class="form-control" id="stok" name="stok" min="0" value="0" required>
             </div>
+
+            <div class="mb-3">
+                <label for="deskripsi" class="form-label">Deskripsi</label>
+                <textarea class="form-control" id="deskripsi" name="deskripsi" rows="3"
+                    placeholder="Masukkan deskripsi minuman ini yang akan di munculkan pada menu iklan"></textarea>
+            </div>
+
 
 
             <div class="mb-3">

@@ -334,6 +334,7 @@ foreach ($orders as $order) {
             <?php endif; ?>
         </div>
     </div>
+    <a href="contoh.php" class="btn btn-info btn-sm">Keuangan</a>
 </div>
 
 <!-- Update Status Modal -->
@@ -410,7 +411,7 @@ foreach ($orders as $order) {
         document.getElementById('detail_tanggal').textContent = tanggal;
         document.getElementById('detail_status').textContent = status;
     }
-    // Auto-hide alerts after 5 seconds
+    // Auto-hide alerts after 5 seconds setTimeout menjalankan fungsi setelah waktu tertentu (5 detik).
     setTimeout(function () {
         const alerts = document.querySelectorAll('.alert');
         alerts.forEach(function (alert) {

@@ -1,11 +1,12 @@
 <?php
 session_start();
+date_default_timezone_set('Asia/Makassar');
 
-// Check if staff is logged in
-if(!isset($_SESSION['staff_logged_in']) || $_SESSION['staff_logged_in'] !== true) {
-    header("Location: login.php");
+if (!isset($_SESSION['staff_logged_in']) || $_SESSION['staff_logged_in'] !== true) {
+    header("Location: login.php"); // bisa arahkan ke halaman login staff jika berbeda
     exit();
 }
+
 
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../classes/Pesanan.php';
@@ -14,190 +15,360 @@ require_once __DIR__ . '/../classes/Menu.php';
 $database = new Database();
 $db = $database->getConnection();
 
-// Get statistics
 $pesanan = new Pesanan($db);
 $menu = new Menu($db);
 
-// Count orders handled by this staff today
+$total_pesanan = $pesanan->read()->rowCount();
+$total_menu = $menu->read()->rowCount();
+
+// Ambil tanggal hari ini untuk filtering
 $today = date('Y-m-d');
-$stmt = $db->prepare("SELECT COUNT(*) as total FROM pesanan WHERE DATE(tgl_pesanan) = ?");
-$stmt->execute([$today]);
-$orders_today = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
 
-// Count total menu items
-$stmt = $menu->read();
-$total_menu = $stmt->rowCount();
+// Hitung pembeli unik status 'Selesai' hari ini
+$query_pembeli_selesai = "
+    SELECT COUNT(DISTINCT nama_pelanggan) AS jumlah_pembeli_selesai 
+    FROM pesanan 
+    WHERE status_pesanan = 'Selesai' AND DATE(tgl_pesanan) = :today
+";
+$stmt_pembeli_selesai = $db->prepare($query_pembeli_selesai);
+$stmt_pembeli_selesai->bindParam(':today', $today);
+$stmt_pembeli_selesai->execute();
+$result = $stmt_pembeli_selesai->fetch(PDO::FETCH_ASSOC);
+$jumlah_pembeli_selesai = $result['jumlah_pembeli_selesai'] ?? 0;
 
-// Recent orders (ambil 5 terbaru)
-$recent_stmt = $db->prepare("SELECT * FROM pesanan ORDER BY tgl_pesanan DESC LIMIT 5");
-$recent_stmt->execute();
-$recent_orders = $recent_stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Hitung jumlah staff dari tabel staff
+$stmtStaffCount = $db->prepare("SELECT COUNT(*) AS total_staff FROM staff");
+$stmtStaffCount->execute();
+$rowStaffCount = $stmtStaffCount->fetch(PDO::FETCH_ASSOC);
+$jumlah_staff = $rowStaffCount['total_staff'] ?? 0;
+
+
+// Ambil data pesanan terbaru hari ini (max 5)
+$query_recent = "
+    SELECT * FROM pesanan 
+    WHERE DATE(tgl_pesanan) = :today
+    ORDER BY tgl_pesanan DESC
+    LIMIT 5
+";
+$stmt = $db->prepare($query_recent);
+$stmt->bindParam(':today', $today);
+$stmt->execute();
+$recent_orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+
 ?>
-
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Staff - Coffee Shop</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <meta charset="UTF-8" />
+    <title>Dashboard - POS | Coffee Shop</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
     <style>
-        .card-stats {
-            transition: transform 0.3s ease;
+        body {
+            background: #f5f6fa;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
         }
-        .card-stats:hover {
+
+        #wrapper {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: #232a34;
+            color: #bbb;
+            padding: 20px 15px;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            overflow-y: auto;
+            position: sticky;
+            top: 0;
+        }
+
+        .sidebar h4 {
+            color: #fff;
+            margin-bottom: 1rem;
+        }
+
+        .sidebar a.nav-link {
+            display: flex;
+            align-items: center;
+            color: #bbb;
+            padding: 10px 12px;
+            border-radius: 5px;
+            margin-bottom: 0.25rem;
+            text-decoration: none;
+        }
+
+        .sidebar a.nav-link.active,
+        .sidebar a.nav-link:hover {
+            background: #1e90ff;
+            color: #fff;
+            text-decoration: none;
+        }
+
+        .sidebar a.nav-link i {
+            margin-right: 8px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .sidebar .user-info {
+            margin-top: auto;
+            border-top: 1px solid #333;
+            padding-top: 12px;
+            font-size: 14px;
+            color: #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        #page-content {
+            flex-grow: 1;
+            overflow-y: auto;
+            height: 100vh;
+            padding: 20px 30px;
+        }
+
+        .headerbar {
+            background: #fff;
+            border-bottom: 1px solid #eaeaea;
+            padding: 20px 0;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .card-stat {
+            border-radius: 12px;
+            transition: transform 0.15s ease-in-out;
+            cursor: default;
+        }
+
+        .card-stat:hover {
             transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(30, 90, 160, 0.12);
         }
-        .navbar-brand {
-            font-weight: bold;
+
+        .table-responsive {
+            max-height: 55vh;
+            overflow-y: auto;
+        }
+
+        @media (max-width: 991px) {
+            .sidebar {
+                width: 70px;
+                padding: 10px 8px;
+            }
+
+            .sidebar h4,
+            .sidebar .user-info span {
+                display: none;
+            }
+
+            .sidebar a.nav-link {
+                justify-content: center;
+                padding: 10px 0;
+            }
+
+            .sidebar a.nav-link i {
+                margin: 0;
+                width: auto;
+            }
+        }
+
+        /* Styling highlight baris selesai */
+        .highlight-selesai {
+            background-color: #d1e7dd !important;
+            /* hijau muda */
+        }
+
+        /* Styling daftar pembeli toggle (optional jika ingin digunakan) */
+        #daftarPembeli {
+            cursor: default;
+            max-height: 200px;
+            overflow-y: auto;
+            padding-left: 0;
+            margin-top: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            background: #fff;
+            color: #333;
+        }
+
+        #daftarPembeli li {
+            padding: 8px 15px;
+            border-bottom: 1px solid #eee;
+            list-style: none;
+            user-select: none;
+        }
+
+        #daftarPembeli li.highlight {
+            background-color: yellow;
         }
     </style>
 </head>
+
 <body>
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container">
-            <a class="navbar-brand" href="dashboard.php">
-                <i class="fas fa-coffee"></i> Coffee Shop Staff
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link active" href="dashboard.php">Dashboard</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="view_menu.php">Lihat Menu</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="pesan_minuman.php">Kelola Pesanan</a>
-                    </li>
-                
-                </ul>
-                <ul class="navbar-nav">
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-user"></i> <?php echo $_SESSION['staff_nama']; ?>
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="profile.php">Profile</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="logout.php">Logout</a></li>
-                        </ul>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
+    <div id="wrapper">
+        <nav class="sidebar">
+            <h4><i class="fas fa-cash-register"></i> Point Of Sale</h4>
 
-    <!-- Main Content -->
-    <div class="container mt-4">
-        <div class="row">
-            <div class="col-md-12">
-                <h1><i class="fas fa-tachometer-alt"></i> Dashboard Staff</h1>
-                <p class="lead">Selamat datang, <?php echo $_SESSION['staff_nama']; ?>! (<?php echo $_SESSION['staff_jabatan']; ?>)</p>
-            </div>
-        </div>
+            <a href="dashboard.php" class="nav-link active"><i class="fas fa-home"></i><span
+                    class="ms-2 d-none d-lg-inline">Dashboard</span></a>
 
-        <!-- Statistics Cards -->
-        <div class="row mt-4">
-            <div class="col-md-4">
-                <div class="card text-white bg-info mb-3 card-stats">
-                    <div class="card-header">
-                        <i class="fas fa-calendar-day"></i> Pesanan Hari Ini
-                    </div>
-                    <div class="card-body">
-                        <h4 class="card-title"><?php echo $orders_today; ?></h4>
-                        <p class="card-text">Pesanan pada <?php echo date('d/m/Y'); ?></p>
-                    </div>
+            <a href="view_menu.php" class="nav-link"><i class="fas fa-utensils"></i><span
+                    class="ms-2 d-none d-lg-inline">Menu</span></a>
+            <a href="manage_orders.php" class="nav-link"><i class="fas fa-cart-shopping"></i><span
+                    class="ms-2 d-none d-lg-inline">Kelola Pesanan</span></a>
+            <a href="detail_pesanan.php" class="nav-link"><i class="fas fa-list"></i><span
+                    class="ms-2 d-none d-lg-inline">Detail Pesanan</span></a>
+            <a href="laporan_harian.php" class="nav-link"><i class="fas fa-file-lines"></i><span
+                    class="ms-2 d-none d-lg-inline">Laporan</span></a>
+
+
+            <div class="user-info mt-auto d-none d-lg-flex align-items-center justify-content-between">
+                <span><i class="fas fa-user-circle"></i>
+                    <?= htmlspecialchars($_SESSION['staff_nama'] ?? 'Staff') ?></span>
+                <a href="logout.php" class="btn btn-sm btn-warning">Logout</a>
+            </div>
+        </nav>
+        <div id="page-content">
+            <div class="headerbar">
+                <div>
+                    <h2 class="mb-0">Vibescoffee</h2>
+                    <small class="text-muted" id="live-time"></small>
+                </div>
+                <div class="d-flex align-items-center">
+                    <?php $foto_staff = $_SESSION['staff_foto'] ?? 'default.jpg'; ?>
+                    <img src="/assets/<?= htmlspecialchars($foto_staff)?>" alt="Foto Staff" width="54" height="54"
+                        class="rounded-circle border border-primary me-2" style="object-fit: cover;">
+                    <span class="fw-bold"><?= htmlspecialchars($_SESSION['staff_nama'] ?? 'Staff') ?></span>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="card text-white bg-success mb-3 card-stats">
-                    <div class="card-header">
-                        <i class="fas fa-coffee"></i> Total Menu
-                    </div>
-                    <div class="card-body">
-                        <h4 class="card-title"><?php echo $total_menu; ?></h4>
-                        <p class="card-text">Menu yang tersedia</p>
+
+            
+
+            <div class="row g-4 mb-4">
+                <div class="col-12 col-sm-6 col-md-3">
+                    <div class="card card-stat bg-primary text-white shadow-sm text-center p-3">
+                        <i class="fas fa-shopping-cart fa-2x mb-2"></i>
+                        <h5>Total Pesanan</h5>
+                        <p class="display-6 fw-bold mb-0"><?= $total_pesanan ?></p>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <!-- Recent Orders -->
-        <div class="row mt-4">
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-header">
-                        <h5><i class="fas fa-list"></i> Pesanan Terbaru</h5>
+                <div class="col-12 col-sm-6 col-md-3">
+                    <div class="card card-stat bg-success text-white shadow-sm text-center p-3">
+                        <i class="fas fa-coffee fa-2x mb-2"></i>
+                        <h5>Total Menu</h5>
+                        <p class="display-6 fw-bold mb-0"><?= $total_menu ?></p>
                     </div>
-                    <div class="card-body">
-                        <?php if(empty($recent_orders)): ?>
-                            <div class="alert alert-info">
-                                <i class="fas fa-info-circle"></i> Belum ada pesanan hari ini.
-                            </div>
-                        <?php else: ?>
-                            <div class="table-responsive">
-                                <table class="table table-striped">
-                                    <thead>
-                                        <tr>
-                                            <th>Kode Pesanan</th>
-                                            <th>Pelanggan</th>
-                                            <th>Total</th>
-                                            <th>Tanggal</th>
-                                            <th>Aksi</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php foreach($recent_orders as $row): ?>
-                                        <tr>
-                                            <td><?php echo htmlspecialchars($row['kode_pesanan']); ?></td>
-                                            <td><?php echo htmlspecialchars($row['nama_pelanggan']); ?></td>
-                                            <td>Rp <?php echo number_format($row['total_harga'], 0, ',', '.'); ?></td>
-                                            <td><?php echo date('d/m/Y H:i', strtotime($row['tgl_pesanan'])); ?></td>
+                </div>
+                <div class="col-12 col-sm-6 col-md-3">
+                    <div class="card card-stat bg-warning text-dark shadow-sm text-center p-3" style="cursor:pointer"
+                        id="jumlahPembeli">
+                        <i class="fas fa-users fa-2x mb-2"></i>
+                        <h6>Jumlah Pembeli Selesai</h6>
+                        <p class="display-6 fw-bold mb-0"><?= $jumlah_pembeli_selesai ?></p>
+                    </div>
+                </div>
+            
+            </div>
+
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                    <span>Pesanan Terbaru Hari ini</span>
+                    <a href="manage_orders.php" class="btn btn-light btn-sm"><i class="fas fa-tasks me-1"></i> Lihat
+                        Semua</a>
+                </div>
+                <div class="card-body p-0">
+                    <?php if (count($recent_orders) === 0): ?>
+                        <div class="alert alert-info text-center m-3">
+                            <i class="fas fa-info-circle fa-3x mb-3"></i>
+                            <h4>Belum ada data pesanan</h4>
+                        </div>
+                    <?php else: ?>
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Kode Pesanan</th>
+                                        <th>Nama Pelanggan</th>
+                                        <th>Jumlah</th>
+                                        <th>Total Harga</th>
+                                        <th>Tanggal</th>
+                                        <th>Jam</th>
+                                        <th>Status</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($recent_orders as $row): ?>
+                                        <tr data-status="<?= htmlspecialchars($row['status_pesanan'] ?? '') ?>">
+                                            <td><?= htmlspecialchars($row['kode_pesanan']) ?></td>
+                                            <td><?= htmlspecialchars($row['nama_pelanggan'] ?? '-') ?></td>
+                                            <td><?= htmlspecialchars($row['jumlah'] ?? '-') ?></td>
+                                            <td>Rp <?= number_format($row['total_harga'] ?? 0, 0, ',', '.') ?></td>
+                                            <td><?= date('d/m/Y', strtotime($row['tgl_pesanan'])) ?></td>
+                                            <td><?= date('H:i', strtotime($row['tgl_pesanan'])) ?></td>
+                                            <td><?= htmlspecialchars($row['status_pesanan'] ?? '-') ?></td>
                                             <td>
-                                                <a href="detail_pesanan.php?kode_pesanan=<?= urlencode($row['kode_pesanan']); ?>" class="btn btn-sm btn-primary">
-                                                    <i class="fas fa-eye"></i> Detail
+                                                <a href="detail_pesanan.php?kode_pesanan=<?= urlencode($row['kode_pesanan']) ?>"
+                                                    class="btn btn-sm btn-primary" title="Detail Pesanan">
+                                                    <i class="fas fa-eye"></i>
                                                 </a>
                                             </td>
                                         </tr>
-                                        <?php endforeach; ?>
-                                    </tbody>
-                                </table>
-                            </div>
-                        <?php endif; ?>
-                        <div class="text-center mt-3">
-                            <a href="handle_orders.php" class="btn btn-primary">
-                                <i class="fas fa-list"></i> Lihat Semua Pesanan
-                            </a>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
                         </div>
-                    </div>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="mt-5 py-4 bg-light">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-12 text-center">
-                    <p>&copy; 2024 Coffee Shop. All rights reserved.</p>
-                </div>
-            </div>
-        </div>
-    </footer>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Auto refresh page every 30 seconds to update order counts
-        setInterval(function() {
-            location.reload();
-        }, 30000);
+        // Fungsi menampilkan waktu live
+        function updateLiveTime() {
+            const now = new Date();
+            const hari = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+            const bulan = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+            const jam = now.getHours().toString().padStart(2, "0");
+            const menit = now.getMinutes().toString().padStart(2, "0");
+            const detik = now.getSeconds().toString().padStart(2, "0");
+            const tanggal = now.getDate().toString().padStart(2, "0");
+            const format = hari[now.getDay()] + ", " + tanggal + " " + bulan[now.getMonth()] + " " + now.getFullYear() + " | " + jam + ":" + menit + ":" + detik;
+            document.getElementById('live-time').textContent = format;
+        }
+        setInterval(updateLiveTime, 1000);
+        updateLiveTime();
+
+        // Toggle highlight pesanan selesai pada tabel saat kartu jumlah pembeli diklik
+        document.getElementById('jumlahPembeli').addEventListener('click', function () {
+            const rows = document.querySelectorAll('.table-responsive table tbody tr');
+            rows.forEach(row => {
+                if ((row.dataset.status || '').toLowerCase() === 'selesai') {
+                    row.classList.toggle('highlight-selesai');
+                }
+            });
+        });
     </script>
 </body>
+
 </html>

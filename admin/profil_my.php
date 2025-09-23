@@ -8,12 +8,13 @@ if (!isset($_SESSION['admin_nama'])) {
 $nama = $_SESSION['admin_nama'];
 $umur = 19;
 $sekolah = "Sulawesi Tengah, Palu";
+$domisili = "JL. Perintis, Makassar, Sulawesi Selatan, Indonesia";
 $profesi = "Mahasiswa, Programmer, Owner Vibescoffee";
-$lokasi = "Palu, Sulawesi Tengah, Indonesia";
+$lokasi = "JL. Perintis, samping kampus UI, Makassar, Sulawesi Selatan, Indonesia";
 
 // Ganti path gambar profil di sini, contoh 'images/foto-saya.jpg'
 // File gambar harus ada di folder yang sesuai
-$foto_profil = "../assets/owner.jpg";
+$foto_profil = "../assets/rahma.jpg";
 ?>
 
 <!DOCTYPE html>
@@ -184,7 +185,7 @@ $foto_profil = "../assets/owner.jpg";
         <h2>Tentang Saya</h2>
         <p>
             Halo, saya <strong><?= htmlspecialchars($nama) ?></strong>, seorang mahasiswa dan programmer yang
-            berdomisili di <strong><?= htmlspecialchars($sekolah) ?></strong>.
+            berdomisili di <strong><?= htmlspecialchars($domisili) ?></strong>.
             Saya adalah pemilik <strong>Vibescoffee</strong>, dan sangat senang mengembangkan teknologi yang inovatif dan
             bermanfaat.
         </p>

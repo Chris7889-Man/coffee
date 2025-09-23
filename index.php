@@ -31,7 +31,7 @@
 
         .hero {
             text-align: center;
-            padding: 40px 10px 20px 10px;
+            padding: 1px 10px 20px 10px;
             background: linear-gradient(#3e2723, #1b0c02);
         }
 
@@ -99,27 +99,27 @@
             margin: 4px 0 0 0;
             font-size: 1em;
             color: #f2e5d3;
+            min-height: 40px; /* agar tinggi deskripsi konsisten */
         }
 
         .product-card .price {
             color: #f5ad56;
-            margin-top: 5px;
+            margin-top: 3px;
             font-size: 1.07em;
             font-weight: bold;
         }
 
-        .logo{
+        .logo {
             color: #f5ad56;
-            margin-top: 5px;
+            margin-top: -5px;
             font-size: 1.07em;
             font-weight: bold;
             border-radius: 10px;
-            width: 60px;
-            height: 70px;
+            width: 100px;
+            height: 100px;
             object-fit: cover;
-            margin-bottom: 10px;
+            margin-bottom: -3px;
         }
-
 
         footer {
             background: #372013;
@@ -127,6 +127,91 @@
             text-align: center;
             padding: 10px 0;
         }
+
+
+        /* QR Code Section */
+        .payment-qr {
+            text-align: center;
+            margin: 40px 0 80px;
+        }
+
+        .payment-qr h2 {
+            color: #d7b899;
+            margin-bottom: 15px;
+        }
+
+        .payment-qr img {
+            width: 250px;
+            height: 250px;
+            object-fit: contain;
+            border: 5px solid #f5ad56;
+            border-radius: 15px;
+            box-shadow: 0 0 10px #d7b89988;
+        }
+
+        @media print {
+  body, .container {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    background-color: #2d2013 !important;
+    color: #f5eee6 !important;         /* warna teks tema */
+    font-family: Arial, sans-serif;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    background-color: #2d2013 !important;
+  }
+  
+  .product-card {
+    box-shadow: none !important;
+    background-color: #382415 !important;
+    color: #f5eee6 !important;
+    border: 1px solid #000;
+    margin-bottom: 1rem;
+    padding: 15px !important;
+    page-break-inside: avoid;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  
+  .product-card img {
+    width: 150px !important;
+    height: 170px !important;
+  }
+  
+  .payment-qr {
+    page-break-inside: avoid;
+    margin: 2cm auto;
+    text-align: center;
+  }
+  
+  .payment-qr img {
+    width: 200px !important;
+    height: 200px !important;
+    border: 5px solid #f5ad56;
+    border-radius: 15px;
+    box-shadow: 0 0 10px #d7b89988;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  
+  footer {
+    page-break-after: avoid;
+    background: #372013 !important;
+    color: #fff !important;
+    text-align: center;
+    padding: 10px 0;
+  }
+  
+  .no-print {
+    display: none !important;
+  }
+  
+  @page {
+    margin: 1.5cm 1.5cm;
+  }
+}
+
     </style>
 </head>
 
@@ -142,38 +227,48 @@
         <h1>Selamat Datang di Vibescoffe</h1>
         <p>Temukan berbagai pilihan kopi premium dan minuman segar lainnya.<br>
             Pesan sekarang, rasakan kenikmatannya!</p>
-        <a href="../karyawan/index.php" class="cta">Masuk Staff</a>
-        <a href="../admin0/index.php" class="cta">Masuk Admin</a>
-        <a href="../admin/index.php" class="cta">Masuk Super Admin</a>
+        <a href="../karyawan/index.php" class="cta">Staff</a>
+        <a href="../admin0/index.php" class="cta">Admin</a>
+        <a href="../admin/index.php" class="cta">Super Admin</a>
+    
     </section>
 
-    <!-- GALERI PRODUK KOPI -->
+    <?php
+    $host = 'localhost';
+    $dbname = 'coffee';
+    $user = 'root';
+    $pass = '';
+
+    try {
+        $db = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $user, $pass);
+        $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    } catch (PDOException $e) {
+        echo "Koneksi gagal: " . $e->getMessage();
+        exit;
+    }
+
+    $query = "SELECT gambar, nama_menu, deskripsi, harga FROM menu ORDER BY kode_menu ASC";
+    $stmt = $db->prepare($query);
+    $stmt->execute();
+    $produk_list = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    ?>
+
     <section class="product-gallery">
-        <div class="product-card">
-            <img src="assets/kopi1.jpg" alt="Espresso Classic">
-            <h3>Espresso Classic</h3>
-            <p>Rasa kopi pekat dan kaya aroma, cocok menemani pagi Anda.</p>
-            <div class="price">Rp 10.000</div>
-        </div>
-        <div class="product-card">
-            <img src="assets/kopi2.jpg" alt="Cappuccino">
-            <h3>Cappuccino</h3>
-            <p>Kopi susu creamy dengan taburan bubuk coklat.</p>
-            <div class="price">Rp 15.000</div>
-        </div>
-        <div class="product-card">
-            <img src="assets/kopi3.jpg" alt="Ice Latte">
-            <h3>Ice Latte</h3>
-            <p>Kopi susu dingin, menyegarkan di setiap waktu.</p>
-            <div class="price">Rp 13.000</div>
-        </div>
-        <div class="product-card">
-            <img src="assets/kopi4.jpg" alt="Mocha Aren">
-            <h3>Mocha Aren</h3>
-            <p>Perpaduan kopi, coklat, dan gula aren lokal.</p>
-            <div class="price">Rp 17.000</div>
-        </div>
-        <!-- Tambahkan produk lain sesuai kebutuhan -->
+        <?php foreach ($produk_list as $produk): ?>
+            <div class="product-card">
+                <img src="assets/<?= htmlspecialchars($produk['gambar'] ?? '') ?>" alt="<?= htmlspecialchars($produk['nama_menu'] ?? '') ?>">
+                <h3><?= htmlspecialchars($produk['nama_menu'] ?? '') ?></h3>
+                <p><?= htmlspecialchars($produk['deskripsi'] ?? '') ?></p>
+                <div class="price">Rp <?= number_format($produk['harga'] ?? 0, 0, ',', '.') ?></div>
+            </div>
+        <?php endforeach; ?>
+    </section>
+
+    
+
+    <section class="payment-qr">
+        <h2>Scan untuk Pembayaran</h2>
+        <img src="assets/qr-pembayaran.jpg" alt="QR Code Pembayaran">
     </section>
 
     <footer>

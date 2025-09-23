@@ -3,7 +3,7 @@ session_start();
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/menu.php';
 
-if (!isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
+if (!isset($_SESSION['staff_logged_in']) || $_SESSION['staff_logged_in'] !== true) {
     header("Location: login.php");
     exit();
 }
@@ -73,22 +73,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->bindParam(':tgl_pesanan', $tgl_pesanan);
         $stmt->bindParam(':status_pesanan', $status_pesanan);
 
-        if ($stmt->execute()) {
-            // Update stok menu
-            $stok_baru = $stok_saat_ini - $jumlah;
-            $updateStokQuery = "UPDATE menu SET stok = :stok WHERE kode_menu = :kode_menu";
-            $updateStmt = $db->prepare($updateStokQuery);
-            $updateStmt->bindParam(':stok', $stok_baru);
-            $updateStmt->bindParam(':kode_menu', $kode_menu);
-            $updateStmt->execute();
+       if ($stmt->execute()) {
+    // Update stok menu
+    $stok_baru = $stok_saat_ini - $jumlah;
+    $updateStokQuery = "UPDATE menu SET stok = :stok WHERE kode_menu = :kode_menu";
+    $updateStmt = $db->prepare($updateStokQuery);
+    $updateStmt->bindParam(':stok', $stok_baru);
+    $updateStmt->bindParam(':kode_menu', $kode_menu);
+    $updateStmt->execute();
 
-            $message = "Pesanan berhasil ditambahkan! Stok menu diupdate menjadi $stok_baru.";
-            $kode_pesanan = generateKodePesanan($db);
-        } else {
-            $message = "Gagal menambahkan pesanan.";
-        }
+    $pesan = "Pesanan berhasil ditambahkan! Stok menu diupdate menjadi $stok_baru.";
+    header('Location: view_menu.php?message=' . urlencode($pesan));
+    exit();
+            } else {
+    $pesan = "Gagal menambahkan pesanan.";
+    header('Location: view_menu.php?message=' . urlencode($pesan));
+    exit();
+            }
+
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Validasi input misal cek kosong
+    if (empty($nama_pelanggan)) {
+        $message = "Nama pelanggan harus diisi.";
+    } elseif ($jumlah <= 0) {
+        $message = "Jumlah harus lebih dari 0.";
+    } elseif ($jumlah > $stok_saat_ini) {
+        $message = "Stok tidak cukup. Stok saat ini: $stok_saat_ini";
+    } else {
+        // proses insert seperti sedia kala
+    }
     }
 }
+}
+
+
+
 
 ?>
 
@@ -150,7 +170,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </select>
             </div>
             <button type="submit" class="btn btn-success">Simpan</button>
-            <a href="manage_orders.php" class="btn btn-secondary">Kembali</a>
+            <a href="view_menu.php" class="btn btn-secondary">Kembali</a>
         </form>
     </div>
 </body>

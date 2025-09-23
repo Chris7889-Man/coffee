@@ -37,6 +37,7 @@ $staffs = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <tr>
                 <th>No</th>
                 <th>Nama</th>
+                <th>Foto</th>
                 <th>Jabatan</th>
                 <th>Username</th>
                 <th>Email</th>
@@ -44,7 +45,7 @@ $staffs = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <th>Alamat</th>
                 <th>Kode Gerobak</th>
                 <th>Lokasi Jualan</th>
-                <th>Tanggal Dibuat</th>
+                <th>Tanggal Terdaftar</th>
                 <th>Aksi</th>
             </tr>
         </thead>
@@ -53,6 +54,16 @@ $staffs = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <tr>
                     <td><?= $no++ ?></td>
                     <td><?= htmlspecialchars($staff['nama_staff'] ?? '') ?></td>
+                <td>
+                    <?php if (!empty($staff['foto']) && $staff['foto'] !== 'default.jpg'): ?>
+                        <img src="/uploads/staff_photos/<?= htmlspecialchars($staff['foto']) ?>"
+                             alt="Foto Staff"
+                             style="max-height: 60px; border-radius: 4px; object-fit: cover;">
+                    <?php else: ?>
+                        <img src="/uploads/staff_photos/default.jpg" alt="Foto Staff"
+                             style="max-height: 60px; border-radius: 4px; object-fit: cover;">
+                    <?php endif; ?>
+                </td>
                     <td><?= htmlspecialchars($staff['jabatan'] ?? '') ?></td>
                     <td><?= htmlspecialchars($staff['username'] ?? '') ?></td>
                     <td><?= htmlspecialchars($staff['email'] ?? '') ?></td>
@@ -64,7 +75,7 @@ $staffs = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <td>
                         <a href="hapus_staff.php?username=<?= urlencode($staff['username']); ?>"
                            onclick="return confirm('Yakin ingin menghapus staff ini?')"
-                           class="btn btn-danger btn-sm">Hapus</a>
+                           class="btn btn-danger btn-sm">Pecat</a>
                     </td>
                 </tr>
             <?php endforeach; ?>

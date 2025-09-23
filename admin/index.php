@@ -37,6 +37,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['admin_nama'] = $user['nama_admin'];
                 $_SESSION['admin_email'] = $user['email'];
                 $_SESSION['is_super_admin'] = $user['is_super_admin']; // pasti 1
+                $_SESSION['admin_foto'] = $user['foto']; // Menyimpan nama file foto admin ke session
+
 
                 header("Location: dashboard.php");
                 exit();

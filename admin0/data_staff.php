@@ -12,22 +12,16 @@ $staffs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 <!DOCTYPE html>
 <html>
-
 <head>
     <title>Data Staff</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-
 <body class="container mt-4">
     <h2>Data Staff</h2>
 
-
-    <div class="mb-3 d-flex gap-2">
-        <a href="dashboard.php" class="btn btn-warning">
-            <i class="bi bi-arrow-left"></i> Kembali
-        </a>
+    <div class="d-flex gap-2 mb-3">
         <a href="tambah_staff.php" class="btn btn-primary">+ Tambah Staff</a>
-       
+        <a href="dashboard.php" class="btn btn-warning">Kembali</a>
     </div>
 
     <?php if (isset($_GET['success'])): ?>
@@ -42,41 +36,50 @@ $staffs = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <thead class="table-dark">
             <tr>
                 <th>No</th>
-                <th>Kode Gerobak</th>
                 <th>Nama</th>
+                <th>Foto</th>
                 <th>Jabatan</th>
                 <th>Username</th>
                 <th>Email</th>
                 <th>No. HP</th>
                 <th>Alamat</th>
+                <th>Kode Gerobak</th>
                 <th>Lokasi Jualan</th>
-                <th>Tanggal Dibuat</th>
+                <th>Tanggal Terdaftar</th>
                 <th>Aksi</th>
             </tr>
         </thead>
         <tbody>
-            <?php $no = 1;
-            foreach ($staffs as $staff): ?>
+            <?php $no = 1; foreach ($staffs as $staff): ?>
                 <tr>
                     <td><?= $no++ ?></td>
-                    <td><?= htmlspecialchars($staff['kode_gerobak'] ?? '') ?></td>
                     <td><?= htmlspecialchars($staff['nama_staff'] ?? '') ?></td>
+                <td>
+                    <?php if (!empty($staff['foto']) && $staff['foto'] !== 'default.jpg'): ?>
+                        <img src="/uploads/staff_photos/<?= htmlspecialchars($staff['foto']) ?>"
+                             alt="Foto Staff"
+                             style="max-height: 60px; border-radius: 4px; object-fit: cover;">
+                    <?php else: ?>
+                        <img src="/uploads/staff_photos/default.jpg" alt="Foto Staff"
+                             style="max-height: 60px; border-radius: 4px; object-fit: cover;">
+                    <?php endif; ?>
+                </td>
                     <td><?= htmlspecialchars($staff['jabatan'] ?? '') ?></td>
                     <td><?= htmlspecialchars($staff['username'] ?? '') ?></td>
                     <td><?= htmlspecialchars($staff['email'] ?? '') ?></td>
                     <td><?= htmlspecialchars($staff['no_hp'] ?? '') ?></td>
                     <td><?= htmlspecialchars($staff['alamat'] ?? '') ?></td>
+                    <td><?= htmlspecialchars($staff['kode_gerobak'] ?? '') ?></td>
                     <td><?= htmlspecialchars($staff['lokasi_jualan'] ?? '') ?></td>
                     <td><?= $staff['tanggal_dibuat'] ?? '' ?></td>
                     <td>
                         <a href="hapus_staff.php?username=<?= urlencode($staff['username']); ?>"
-                            onclick="return confirm('Yakin ingin menghapus staff ini?')"
-                            class="btn btn-danger btn-sm">Hapus</a>
+                           onclick="return confirm('Yakin ingin menghapus staff ini?')"
+                           class="btn btn-danger btn-sm">Pecat</a>
                     </td>
                 </tr>
             <?php endforeach; ?>
         </tbody>
     </table>
 </body>
-
 </html>

@@ -13,6 +13,7 @@ class Menu
     public $status;
     public $stok;
     public $gambar;
+    public $deskripsi;
 
     // Properti tambahan untuk keterangan custom history stok
     public $keterangan_history = null;
@@ -45,7 +46,8 @@ class Menu
                     harga = :harga,
                     status = :status,
                     stok = :stok,
-                    gambar = :gambar";
+                    gambar = :gambar,
+                    deskripsi = :deskripsi";
 
             $stmt = $this->conn->prepare($query);
 
@@ -60,6 +62,8 @@ class Menu
             $stmt->bindParam(":status", $this->status);
             $stmt->bindParam(":stok", $stok, PDO::PARAM_INT);
             $stmt->bindParam(":gambar", $this->gambar);
+            $stmt->bindParam(":deskripsi", $this->deskripsi);
+
 
             if (!$stmt->execute()) {
                 $this->conn->rollBack();
@@ -102,7 +106,7 @@ class Menu
     // Read all menu
     public function read()
     {
-        $query = "SELECT kode_menu, nama_menu, kategori, harga, status, stok, gambar, created_at 
+        $query = "SELECT kode_menu, nama_menu, kategori, harga, status, stok, gambar, deskripsi, created_at 
                   FROM " . $this->table_name . " ORDER BY created_at DESC";
 
         $stmt = $this->conn->prepare($query);
@@ -114,7 +118,7 @@ class Menu
     // Read available menu
     public function readAvailable()
     {
-        $query = "SELECT kode_menu, nama_menu, kategori, harga, status, stok, gambar, created_at 
+        $query = "SELECT kode_menu, nama_menu, kategori, harga, status, stok, gambar, deskripsi, created_at 
                   FROM " . $this->table_name . " WHERE status = 'Tersedia' ORDER BY kategori, nama_menu";
 
         $stmt = $this->conn->prepare($query);
@@ -126,7 +130,7 @@ class Menu
     // Read menu by category
     public function readByCategory()
     {
-        $query = "SELECT kode_menu, nama_menu, kategori, harga, status, stok, gambar, created_at 
+        $query = "SELECT kode_menu, nama_menu, kategori, harga, status, stok, gambar, deskripsi, created_at 
                   FROM " . $this->table_name . " WHERE kategori = :kategori AND status = 'Tersedia' ORDER BY nama_menu";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(":kategori", $this->kategori);
@@ -138,7 +142,7 @@ class Menu
     // Mendapatkan menu berdasarkan kode_menu, mengembalikan array hasil fetch
     public function getByKode($kode_menu)
     {
-        $query = "SELECT kode_menu, nama_menu, kategori, harga, status, stok, gambar, created_at 
+        $query = "SELECT kode_menu, nama_menu, kategori, harga, status, stok, gambar, deskripsi, created_at 
                   FROM " . $this->table_name . " WHERE kode_menu = :kode_menu";
 
         $stmt = $this->conn->prepare($query);
@@ -159,7 +163,7 @@ class Menu
             $this->conn->beginTransaction();
 
             $query = "UPDATE " . $this->table_name . " 
-                      SET nama_menu=:nama_menu, kategori=:kategori, harga=:harga, status=:status, stok=:stok, gambar=:gambar
+                      SET nama_menu=:nama_menu, kategori=:kategori, harga=:harga, status=:status, stok=:stok, gambar=:gambar,  deskripsi = :deskripsi
                       WHERE kode_menu=:kode_menu";
 
             $stmt = $this->conn->prepare($query);
@@ -177,6 +181,8 @@ class Menu
             $stmt->bindParam(":stok", $stok, PDO::PARAM_INT);
             $stmt->bindParam(":gambar", $gambar);
             $stmt->bindParam(":kode_menu", $this->kode_menu);
+            $stmt->bindParam(":deskripsi", $this->deskripsi);
+
      
 
             if (!$stmt->execute()) {

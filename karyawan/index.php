@@ -6,21 +6,24 @@ require_once '../config/database.php';
 $message = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = $_POST['email'] ?? '';
+    $userInput = $_POST['email'] ?? ''; // Bisa username atau email
     $password = $_POST['password'] ?? '';
 
-    if (empty($email) || empty($password)) {
-        $message = "Email dan password harus diisi!";
+    if (empty($userInput) || empty($password)) {
+        $message = "Username/email dan password harus diisi!";
     } else {
         $database = new Database();
         $db = $database->getConnection();
 
-        $query = "SELECT nama_staff, jabatan, username, email, no_hp, alamat, password FROM staff WHERE email = :email LIMIT 1";
+        $query = "SELECT nama_staff, jabatan, username, email, no_hp, alamat, foto, password FROM staff WHERE email = :userInput OR username = :userInput LIMIT 1";
         $stmt = $db->prepare($query);
-        $stmt->bindParam(':email', $email);
+        $stmt->bindParam(':userInput', $userInput);
         $stmt->execute();
 
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
+      
+
+
 
         if ($row) {
             if (password_verify($password, $row['password'])) {
@@ -31,14 +34,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['staff_email'] = $row['email'];
                 $_SESSION['staff_no_hp'] = $row['no_hp'];
                 $_SESSION['staff_alamat'] = $row['alamat'];
+                $_SESSION['staff_foto'] = $row['foto'];  // Ambil dari field foto database
 
-                header("Location: dashboard.php");
+
+                header("Location: view_menu.php");
                 exit();
             } else {
-                $message = "Email atau password salah!";
+                $message = "Username/email atau password salah!";
             }
         } else {
-            $message = "Email atau password salah!";
+            $message = "Username/email atau password salah!";
         }
     }
 }
@@ -88,6 +93,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 transform: translateY(-100vh) rotate(0deg);
                 opacity: 1;
             }
+
             100% {
                 transform: translateY(100vh) rotate(360deg);
                 opacity: 0;
@@ -100,8 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             max-width: 420px;
             width: 90%;
             border-radius: 20px;
-            box-shadow:
-                0 15px 35px rgba(0, 0, 0, 0.8),
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.8),
                 inset 0 0 30px rgba(60, 40, 20, 0.6);
             padding-bottom: 1rem;
             border: 1px solid rgba(180, 158, 103, 0.2);
@@ -134,9 +139,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+            }
         }
 
         .card-body {
@@ -244,9 +257,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-5px);
+            }
+
+            75% {
+                transform: translateX(5px);
+            }
         }
 
         .btn-outline-light {
@@ -293,11 +316,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 margin: 20px;
                 width: calc(100% - 40px);
             }
-            
+
             .card-header h2 {
                 font-size: 1.8rem;
             }
-            
+
             .card-header i {
                 font-size: 2rem;
             }
@@ -307,7 +330,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <body>
     <div class="coffee-beans"></div>
-    
+
     <div class="card shadow">
         <div class="card-header">
             <i class="fas fa-coffee"></i>
@@ -320,22 +343,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <i class="fas fa-exclamation-triangle"></i> <?php echo htmlspecialchars($message); ?>
                 </div>
             <?php endif; ?>
-            
+
             <form id="loginForm" method="POST" novalidate>
                 <div class="mb-3">
                     <label for="email" class="form-label">
-                        <i class="fas fa-envelope"></i> Email Address
+                        <i class="fas fa-envelope"></i> Username atau Email
                     </label>
                     <div class="input-group">
                         <span class="input-group-text">
                             <i class="fas fa-user"></i>
                         </span>
-                        <input type="email" id="email"  autocomplete="new-password" name="email" placeholder="Masukkan email Anda" 
-                               class="form-control" required autofocus 
-                               value="<?php echo htmlspecialchars($_POST['email'] ?? ''); ?>" />
+                        <input type="text" id="email" autocomplete="new-password" name="email"
+                            placeholder="Masukkan username atau email Anda" class="form-control" required autofocus
+                            value="<?php echo htmlspecialchars($_POST['email'] ?? ''); ?>" />
                     </div>
                 </div>
-                
                 <div class="mb-3">
                     <label for="password" class="form-label">
                         <i class="fas fa-lock"></i> Password
@@ -344,24 +366,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <span class="input-group-text">
                             <i class="fas fa-key"></i>
                         </span>
-                        <input type="password" id="password"  autocomplete="new-password" name="password" placeholder="Masukkan password Anda"
-                               class="form-control" required />
+                        <input type="password" id="password" autocomplete="new-password" name="password"
+                            placeholder="Masukkan password Anda" class="form-control" required />
                         <button class="btn btn-outline-secondary" type="button" id="togglePassword">
                             <i class="fas fa-eye"></i>
                         </button>
                     </div>
                 </div>
-                
+
                 <button type="submit" class="btn btn-primary">
                     <i class="fas fa-sign-in-alt"></i> Login
                 </button>
-                
+
                 <div class="loading">
                     <div class="spinner-border" role="status"></div>
                     <span class="ms-2">Logging in...</span>
                 </div>
             </form>
-            
+
             <div class="btn-kembali-wrapper">
                 <a href="../index.php" class="btn btn-outline-light">
                     <i class="fas fa-arrow-left"></i> Kembali ke Beranda
@@ -373,10 +395,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Toggle password visibility
-        document.getElementById('togglePassword').addEventListener('click', function() {
+        document.getElementById('togglePassword').addEventListener('click', function () {
             const passwordInput = document.getElementById('password');
             const icon = this.querySelector('i');
-            
+
             if (passwordInput.type === 'password') {
                 passwordInput.type = 'text';
                 icon.classList.remove('fa-eye');
@@ -389,10 +411,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         });
 
         // Form submission with loading state
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
+        document.getElementById('loginForm').addEventListener('submit', function (e) {
             const submitBtn = this.querySelector('button[type="submit"]');
             const loading = document.querySelector('.loading');
-            
+
             submitBtn.style.display = 'none';
             loading.style.display = 'block';
         });
@@ -405,9 +427,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             bean.style.left = Math.random() * 100 + '%';
             bean.style.animationDelay = Math.random() * 2 + 's';
             bean.style.animationDuration = (Math.random() * 3 + 7) + 's';
-            
+
             document.querySelector('.coffee-beans').appendChild(bean);
-            
+
             // Remove bean after animation
             setTimeout(() => {
                 bean.remove();
@@ -416,14 +438,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Create beans periodically
         setInterval(createCoffeeBean, 3000);
-        
+
         // Create initial beans
         for (let i = 0; i < 5; i++) {
             setTimeout(createCoffeeBean, i * 1000);
         }
 
         // Auto-hide alert after 5 seconds
-        setTimeout(function() {
+        setTimeout(function () {
             const alert = document.querySelector('.alert');
             if (alert) {
                 alert.classList.add('fade');
