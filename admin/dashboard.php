@@ -66,7 +66,7 @@ $stmt->execute();
 $recent_orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 ?>
-My name<span class="ms-2 fw-normal"><?= htmlspecialchars($_SESSION['admin_nama']) ?></span>, welcome to the dashboard of Vibescoffee
+My name is<span class="ms-2 fw-normal"><?= htmlspecialchars($_SESSION['admin_nama']) ?></span>, welcome to the dashboard of Vibescoffee
 
 <!DOCTYPE html>
 <html lang="id">
